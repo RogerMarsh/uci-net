@@ -1,0 +1,59 @@
+===============================
+Universal Chess Interface (UCI)
+===============================
+
+.. contents::
+
+
+Description
+===========
+
+This package provides a pure Python client-server Universal Chess Interface.
+
+The clientserver package is extented with the UCI commands.
+
+
+Installation Instructions
+=========================
+
+Build dependencies
+
+* `Python`_ 3.3 or later 
+
+Install the package by typing
+
+   python setup.py install
+
+at the command prompt with setup.py in the current directory.
+
+You may need to give the path and version of Python depending on your system's configuration:
+
+   <path to python>/python<version> setup.py install
+
+   For example
+
+      C:\\Python33\\python setup.py install
+
+         on Microsoft Windows or
+
+      python3.3 setup.py install
+
+         on Unix-like systems.
+
+Runtime dependencies
+
+* `Python`_ 3.3 or later.
+* tkinter, part of Python, which is installed separately sometimes.
+* `clientserver`_ package.
+
+
+Notes
+=====
+
+This package is little more than a test resource for the clientserver package at present.
+
+It is very easy to do the wrong command at the wrong time given the difference in protocol style between UCI and client server.
+
+
+.. _`Python`: https://python.org
+.. _'clientserver': http://www.solentware.co.uk/download.html
