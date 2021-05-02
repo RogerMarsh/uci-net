@@ -8,7 +8,7 @@ Universal Chess Interface (UCI)
 Description
 ===========
 
-This package provides a pure Python client-server Universal Chess Interface.
+This package provides a pure Python client-server `Universal Chess Interface`_.
 
 The clientserver package is extented with the UCI commands.
 
@@ -43,17 +43,18 @@ You may need to give the path and version of Python depending on your system's c
 Runtime dependencies
 
 * `Python`_ 3.3 or later.
-* tkinter, part of Python, which is installed separately sometimes.
 * `clientserver`_ package.
 
 
 Notes
 =====
 
-This package is little more than a test resource for the clientserver package at present.
+The dependency on the incomplete `clientserver`_ package has been disabled in this release so it can be used by 'ChessScorepad`_ to ask local chess engines to evaluate positions.
 
 It is very easy to do the wrong command at the wrong time given the difference in protocol style between UCI and client server.
 
 
 .. _`Python`: https://python.org
 .. _'clientserver': http://www.solentware.co.uk/download.html
+.. _`Universal Chess Interface`: https://en.wikipedia.org/wiki/Universal_Chess_Interface
+.. _`ChessScorepad`: http://www.solentware.co.uk/download.html

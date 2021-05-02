@@ -486,7 +486,7 @@ class InfoParameters(object):
 
         # The 'string' info escapes the rest of the line.
         if ip.string in ipsplit:
-            i = ipsplit(ip.string)
+            i = ipsplit.index(ip.string)
             ipsplit[i+1:] = [' '.join(ipsplit[i+1:])]
 
         # Verify info command is not ambiguous only.
@@ -642,7 +642,20 @@ class BestmoveParameters(object):
 
 
 class Engine(object):
-    """The chess engine state according to commands from engine."""
+    """The chess engine state according to commands from engine.
+
+    Info commands from a chess engine are kept in the info attribute: a deque
+    of (<info command text>, <InfoSnapshot instance created from text>) tuples
+    with each tuple added by the append() method.
+
+    InfoSnapshot is a namedtuple with attributes for every "additional info",
+    plus the pv_group attribute to collate the pv "additional info"s received
+    between consecutive bestmove commands from a chess engine.
+
+    The pv_group attribute binds to a dictionary shared by all InfoSnapshots
+    created between consecutive bestmove commands from a chess engine.
+
+    """
     _empty_infosnapshot = InfoSnapshot(*[None]*(len(InfoParameters.all_) + 1))
 
     def __init__(self):
@@ -650,9 +663,7 @@ class Engine(object):
         self.name = None
         self.author = None
         self.options = {}
-        self.info = deque()
-        self.snapshot = self._empty_infosnapshot
-        self.bestmove = None
+        self.initialize_info_snapshot()
 
         # Attributes _uciok_expected | _readyok_expected are bound to:
         # None  - at initialisation, when uci | isready has never been sent.
@@ -676,7 +687,19 @@ class Engine(object):
         self.registration = None
 
     def note_engine_bestmove(self, text):
-        """"""
+        """Set self.bestmove to (text, <bestmove extracted from text>).
+
+        If a bestmove was found in text, it should be safe to prune the stack
+        of InfoSnapshot objects keeping the only last one.
+
+        However this is left to users of this class because it is not clear
+        this interpretation is required of all chess engines.
+
+        A statement equivalent to "del self.info[:-1]" is probably correct if
+        the history prior to most recent bestmove is not of interest and the
+        pruning is done before the next 'go' command.
+
+        """
         bp = BestmoveParameters
         bestmove = bp.parse_bestmove(text)
         if bestmove:
@@ -696,8 +719,15 @@ class Engine(object):
         ip = InfoParameters
         info = ip.parse_info(text)
         if info:
-            self.info.append((text, self.snapshot))
             if ip.pv in info:
+
+                # Not simply:
+                #pv_group = self.snapshot.pv_group
+                #pv_group[info.get(ip.multipv)] = info
+                #self.snapshot = self.snapshot._replace(**info)
+                # because the UCI specification says 'should' not 'must' about
+                # grouping and order of infos.  Retain the depth history of
+                # each line in case there is doubt which could be resolved.
                 pv_group = self.snapshot.pv_group
                 if pv_group is None:
                     pv_group = dict()
@@ -709,8 +739,10 @@ class Engine(object):
                 pv_group[info.get(ip.multipv)] = info
                 self.snapshot = self.snapshot._replace(
                     pv_group=pv_group, **info)
+
             else:
                 self.snapshot = self.snapshot._replace(**info)
+            self.info.append((text, self.snapshot))
 
     def note_engine_option(self, text):
         """"""
@@ -744,10 +776,14 @@ class Engine(object):
         for i in c:
             self.note_engine_command(i)
 
+    def initialize_info_snapshot(self):
+        """Initialize data structures holding commands from chess engines."""
+        self.info = deque()
+        self.clear_snapshot()
+
     def clear_snapshot(self):
         """"""
-        self.info.clear()
-        self.snapshot = self._empty_infosnapshot
+        self.snapshot = self._empty_infosnapshot._replace(pv_group={})
         self.bestmove = None
 
     @property

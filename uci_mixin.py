@@ -4,16 +4,21 @@
 
 """Universal Chess Interface (UCI) communication with chess engine driver.
 
-UCIDriver was originally in UCI (uci.py) as the extension of Provider class
-for chess engines, but it should be available independently.
-
 """
+# UCIMixin was originally in UCI (uci.py), called UCIDriver, as the extension of
+# Provider class for chess engines, but it should be available independently.
 
 import subprocess
 from collections import deque
+import shlex
 
 # Use the multiprocessing API for threading
 from multiprocessing import dummy
+
+# So subprocess can be told to use parent's console on Microsoft Windows.
+import sys
+_win32_platform = sys.platform == 'win32'
+del sys
 
 
 class UCIError(Exception):
@@ -40,10 +45,16 @@ class UCIMixin(object):
         # Used to decide polling strategy for responses.
         self._commands_sent = deque()
 
-    def start_engine(self, string):
+    def start_engine(self, path, args):
         """Set command to start engine."""
         if self.engine_process:
             return
+
+        if _win32_platform:
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        else:
+            startupinfo = None
 
         self._engine_response_handler = dummy.Process(
             target=self._engine_response_catcher)
@@ -51,12 +62,18 @@ class UCIMixin(object):
         self._termination_handler = dummy.Process(
             target=self._process_response_terminations)
         self._termination_handler.daemon = True
+        if args:
+            args = shlex.split(args)
+            args.insert(0, path)
+        else:
+            args = [path]
         self.engine_process = subprocess.Popen(
-            string.split(),
+            args,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             bufsize=1,
-            universal_newlines=True)
+            universal_newlines=True,
+            startupinfo=startupinfo)
         self._engine_response_handler.start()
         self._termination_handler.start()
 

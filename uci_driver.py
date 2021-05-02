@@ -22,11 +22,11 @@ class UCIDriver(UCIMixin):
         self.init_mixin(to_ui_queue, ui_name)
 
 
-def run_driver(to_driver_queue, to_ui_queue, path, ui_name):
+def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
     """"""
     driver = UCIDriver(to_ui_queue, ui_name)
     try:
-        driver.start_engine(path)
+        driver.start_engine(path, args)
     except:
         to_ui_queue.put(('start failed', (ui_name,)))
         return

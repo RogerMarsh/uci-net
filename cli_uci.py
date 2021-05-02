@@ -217,7 +217,7 @@ class CLIUCI(object):
 
         # Clear the old engine snapshot as late as possible.
         # Hook in do_request() which follows?
-        self._engine.clear_snapshot()
+        self._engine.initialize_info_snapshot()
         
         self.client.do_request()
         #self.write_client_response(self.client.response)
