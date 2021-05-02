@@ -14,9 +14,7 @@ This package provides a pure Python client-server `Universal Chess Interface`_.
 Installation Instructions
 =========================
 
-Build dependencies
-
-* `Python`_ 3.6 or later 
+Usually this package will be installed by installing `ChessTab`_.
 
 Install the package by typing
 
@@ -38,9 +36,7 @@ You may need to give the path and version of Python depending on your system's c
 
          on Unix-like systems.
 
-Runtime dependencies
-
-* `Python`_ 3.6 or later.
+Use `Python`_ 3.6 or later.
 
 
 Notes

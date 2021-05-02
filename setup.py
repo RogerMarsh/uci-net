@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     setup(
         name='uci-net',
-        version='1.1',
+        version='1.1.1',
         description='Universal Chess Interface client-server conversation',
         author='Roger Marsh',
         author_email='roger.marsh@solentware.co.uk',
