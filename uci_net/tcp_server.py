@@ -65,9 +65,8 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
 if __name__ == '__main__':
 
 
-    @asyncio.coroutine
-    def handle_client_uci_commands(reader, writer):
-        data = yield from reader.read()
+    async def handle_client_uci_commands(reader, writer):
+        data = await reader.read()
         message = data.decode()
 
         commands = literal_eval(message)
@@ -115,7 +114,7 @@ if __name__ == '__main__':
             reply = repr((engine_name, reply))
             writer.write(reply.encode())
 
-        yield from writer.drain()
+        await writer.drain()
 
         writer.close()
 
@@ -163,13 +162,19 @@ if __name__ == '__main__':
         args = None
     else:
         sys.stdout.write(''.join(
-            ('A path to an UCI chess engine must be given.\n',
-             'Usage:\n\n',
-             'python[version] -m uci.tcp_driver ',
+            ('Usage:\n\n',
+             'python[version] -m uci_net.tcp_driver ',
              '[port] [allowed callers] ',
              'path [options]\n\n',
-             "See chess engine documentation for 'options'.\n",
-             "'allowed callers' is comma separated hostname list.\n",
+             'A path to an UCI chess engine must be given.\n\n',
+             "See chess engine documentation for 'options'.\n\n",
+             "'allowed callers' is a comma separated hostname list.\n",
+             "Only those on the list are allowed, but anyone is allowed if\n",
+             "no list is given.\n\n",
+             "'port' is the port the server will listen on.\n",
+             "The default is ",
+             str(UCIServer.listen_port),
+             ".\n\n",
              )))
         sys.exit()
 

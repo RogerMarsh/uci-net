@@ -8,7 +8,7 @@ Universal Chess Interface (UCI)
 Description
 ===========
 
-This package provides a pure Python client-server `Universal Chess Interface`_.
+This package provides a pure Python client-server `Universal Chess Interface`_ to a chess engine intended for analysing positions rather than playing games.
 
 
 Installation Instructions
@@ -39,12 +39,36 @@ You may need to give the path and version of Python depending on your system's c
 Use `Python`_ 3.6 or later.
 
 
+Run
+===
+
+The command to run the server is:
+
+   python -m uci_net.tcp_driver [port] [allowed callers] path [options]
+
+A path to a UCI chess engine must be given.
+
+See chess engine documentation for options.
+
+By default anyone is allowed to use the server, subject to firewall restrictions.  A comma
+separated list of hostnames prevents hosts not in the list from using the server.
+
+Conections to the server are made on port 'port'.  The default is 11111.
+
+Assuming a hostname 'stockfishbox' with IP address 192.168.0.1 and the default port, suitable engine definition records in `ChessTab`_ are:
+
+   '//stockfishbox:11111?name=Stockfish 12' or
+   '//192.168.0.1:11111?name=Stockfish 12'.
+
+The record says 'name=Stockfish 12' because 'Stockfish 12' is the 'id name' value returned by Stockfish 12 in response to the 'uci' command.
+
+
 Notes
 =====
 
-Project name and package name changed from 'uci' to 'uci-chess' prior to upload to PyPI.
+Project name and package name changed from 'uci' to 'uci-net' prior to upload to PyPI.
 
-The version numbers of uci-chess continue on from uci.
+The version numbers of uci-net continue on from uci.
 
 
 .. _`Python`: https://python.org

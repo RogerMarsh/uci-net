@@ -30,7 +30,7 @@ class UCIDriverOverTCP(UCIDriver):
         """
         url = urlsplit(args[0])
         if url.port or url.hostname:
-            args.insert(0, 'uci.tcp_client')
+            args.insert(0, 'uci_net.tcp_client')
             args.insert(0, '-m')
             args.insert(
                 0,
