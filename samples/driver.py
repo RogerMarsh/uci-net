@@ -1,4 +1,4 @@
-# uci_driver.py
+# driver.py
 # Copyright 2015 Roger Marsh
 # License: See LICENSE.TXT (BSD licence)
 
@@ -10,8 +10,28 @@ import tkinter.filedialog
 import sys
 import multiprocessing
 from queue import Empty
+from urllib.parse import urlsplit
 
-from ..uci_driver import run_driver
+from ..uci_driver_over_tcp import UCIDriverOverTCP
+from ..engine import CommandsToEngine
+
+
+# Copied from chesstab/core/uci.py
+def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
+    """"""
+    driver = UCIDriverOverTCP(to_ui_queue, ui_name)
+    try:
+        driver.start_engine(path, args)
+    except:
+        to_ui_queue.put(('start failed', (ui_name,)))
+        return
+    to_ui_queue.put(('started', (ui_name,)))
+    while True:
+        command = to_driver_queue.get()
+        if command == CommandsToEngine.quit_:
+            break
+        driver.send_to_engine(command)
+    driver.quit_engine()
 
 
 class EngineOutput:
@@ -29,9 +49,13 @@ class EngineOutput:
         menu = tkinter.Menu(menubar, name='engine', tearoff=False)
         menubar.add_cascade(label='Engine', menu=menu, underline=0)
         menu.add_command(
-            label='Start',
-            underline=0,
-            command=self.start_engine)
+            label='Start Local',
+            underline=6,
+            command=self.start_local_engine)
+        menu.add_command(
+            label='Start Remote',
+            underline=6,
+            command=self.start_remote_engine)
         menu.add_separator()
         menu.add_command(
             label='Quit',
@@ -40,47 +64,47 @@ class EngineOutput:
         menu = tkinter.Menu(menubar, name='commands', tearoff=False)
         menubar.add_cascade(label='Commands', menu=menu, underline=0)
         menu.add_command(
-            label='uci',
+            label=CommandsToEngine.uci,
             underline=0,
             command=self.uci)
         menu.add_command(
-            label='debug',
+            label=CommandsToEngine.debug,
             underline=0,
             command=self.debug)
         menu.add_command(
-            label='isready',
+            label=CommandsToEngine.isready,
             underline=0,
             command=self.isready)
         menu.add_command(
-            label='setoption',
+            label=CommandsToEngine.setoption,
             underline=0,
             command=self.setoption)
         menu.add_command(
-            label='register',
+            label=CommandsToEngine.register,
             underline=0,
             command=self.register)
         menu.add_command(
-            label='ucinewgame',
+            label=CommandsToEngine.ucinewgame,
             underline=3,
             command=self.ucinewgame)
         menu.add_command(
-            label='position',
+            label=CommandsToEngine.position,
             underline=0,
             command=self.position)
         menu.add_command(
-            label='go',
+            label=CommandsToEngine.go,
             underline=0,
             command=self.go)
         menu.add_command(
-            label='stop',
+            label=CommandsToEngine.stop,
             underline=1,
             command=self.stop)
         menu.add_command(
-            label='ponderhit',
+            label=CommandsToEngine.ponderhit,
             underline=1,
             command=self.ponderhit)
         menu.add_command(
-            label='quit',
+            label=CommandsToEngine.quit_,
             underline=0,
             command=self.quit_)
         self.root.configure(menu=menubar)
@@ -103,7 +127,7 @@ class EngineOutput:
         if dlg == tkinter.messagebox.YES:
             for ud, v in self.uci_drivers.items():
                 try:
-                    v[1].put('quit')
+                    v[1].put(CommandsToEngine.quit_)
                 except:
                     tkinter.messagebox.showinfo(
                         title='Stop Engine',
@@ -120,7 +144,7 @@ class EngineOutput:
             self.uci_drivers.clear()
             self.root.destroy()
 
-    def start_engine(self):
+    def start_local_engine(self):
 
         if sys.platform == 'win32':
             filetypes = (('Chess Engines', '*.exe'),)
@@ -136,12 +160,37 @@ class EngineOutput:
             return
 
         def get(event):
-            self.run_engine(self._contents.get())
+            text = self._contents.get()
+            url = urlsplit(text)
+            if url.port or url.hostname:
+                tkinter.messagebox.showinfo(
+                    title='Start Local Engine',
+                    message='Starting a remote engine is not allowed here')
+                return
+            text = text.split(maxsplit=1)
+            self.run_engine(text[0], text[1] if len(text) > 1 else None)
             self._toplevel.destroy()
             del self._toplevel
             del self._contents
 
         self.do_command(engine, get)
+
+    def start_remote_engine(self):
+
+        def get(event):
+            text = self._contents.get()
+            url = urlsplit(text)
+            if not (url.port and url.hostname):
+                tkinter.messagebox.showinfo(
+                    title='Start Remote Engine',
+                    message='Specify hostname and port for remote engine')
+                return
+            self.run_engine(text, None)
+            self._toplevel.destroy()
+            del self._toplevel
+            del self._contents
+
+        self.do_command('//', get)
 
     def do_command(self, initial_value, callback):
             
@@ -154,7 +203,7 @@ class EngineOutput:
         entrythingy["textvariable"] = self._contents
         entrythingy.bind('<Key-Return>', callback)
 
-    def run_engine(self, program_file_name):
+    def run_engine(self, program_file_name, args):
         
         self.counter += 1
         ui_name = ' : '.join((str(self.counter), program_file_name))
@@ -164,6 +213,7 @@ class EngineOutput:
             args=(to_driver_queue,
                   self.uci_drivers_reply,
                   program_file_name,
+                  args,
                   ui_name),
             )
         driver.start()
@@ -206,47 +256,47 @@ class EngineOutput:
 
     def uci(self):
 
-        self.do_command('uci', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.uci, self.send_to_all_engines)
 
     def debug(self):
 
-        self.do_command('debug', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.debug, self.send_to_all_engines)
 
     def isready(self):
 
-        self.do_command('isready', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.isready, self.send_to_all_engines)
 
     def setoption(self):
 
-        self.do_command('setoption', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.setoption, self.send_to_all_engines)
 
     def register(self):
 
-        self.do_command('register', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.register, self.send_to_all_engines)
 
     def ucinewgame(self):
 
-        self.do_command('ucinewgame', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.ucinewgame, self.send_to_all_engines)
 
     def position(self):
 
-        self.do_command('position', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.position, self.send_to_all_engines)
 
     def go(self):
 
-        self.do_command('go', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.go, self.send_to_all_engines)
 
     def stop(self):
 
-        self.do_command('stop', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.stop, self.send_to_all_engines)
 
     def ponderhit(self):
 
-        self.do_command('ponderhit', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.ponderhit, self.send_to_all_engines)
 
     def quit_(self):
 
-        self.do_command('quit', self.send_to_all_engines)
+        self.do_command(CommandsToEngine.quit_, self.send_to_all_engines)
 
     def get_engine_responses(self):
 

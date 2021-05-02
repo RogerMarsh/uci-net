@@ -2,7 +2,11 @@
 # Copyright 2015 Roger Marsh
 # License: See LICENSE.TXT (BSD licence)
 
-"""Universal Chess Interface (UCI) user interface view of engine state."""
+"""Collate analysis from a chess engine.
+
+The chess engine must support the Universal Chess Interface (UCI).
+
+"""
 
 from collections import namedtuple, deque
 import re
@@ -26,6 +30,7 @@ class CommandsToEngine(object):
     stop = 'stop'
     ponderhit = 'ponderhit'
     quit_ = 'quit'
+    start = 'start'
 
 
 class GoSubCommands(object):
@@ -109,7 +114,7 @@ class CommandsFromEngine(object):
 
 
 class IdParameters(object):
-    """The names of parameters in the id command"""
+    """The names of parameters in the id command."""
     name = 'name'
     author = 'author'
 
@@ -213,7 +218,7 @@ class OptionParameters(object):
 
 
 class OptionTypes(object):
-    """The values of type and <Type> in the <Type>Option namedtuples"""
+    """The values of type and <Type> in the <Type>Option namedtuples."""
     button = 'button'
     check = 'check'
     combo = 'combo'
@@ -241,6 +246,7 @@ class ReservedOptionNames(object):
     _true = 'true'
     _check_values = frozenset((_true, _false))
 
+    clear_hash = 'Clear Hash'
     empty_string = '<empty>'
     reserved_prefix = 'UCI_'
     Hash = 'Hash'
@@ -287,7 +293,7 @@ class ReservedOptionNames(object):
     @staticmethod
     def is_invalid_defined_option(
         name=None, type_=None, default=None, min_=None, max_=None, var=None):
-        """Return True if arguments are an invalid for a UCI defined option"""
+        """Return True if arguments are an invalid for a UCI defined option."""
         ron = ReservedOptionNames
         if name not in ron.type_:
             if name.startswith(ron.reserved_prefix):
@@ -509,7 +515,7 @@ class InfoParameters(object):
 
 
 class ScoreInfoValueNames(object):
-    """The names of score info values and type of value if any"""
+    """The names of score info values and type of value if any."""
     cp = 'cp'
     mate = 'mate'
     lowerbound = 'lowerbound'
@@ -603,7 +609,7 @@ InfoSnapshot = namedtuple('InfoSnapshot',
 
 
 class BestmoveParameters(object):
-    """The names of parameters in the bestmove command"""
+    """The names of parameters in the bestmove command."""
     ponder = 'ponder'
 
     all_ = frozenset((ponder,))
@@ -819,3 +825,9 @@ class Engine(object):
             self.registration = status
         else:
             self.registration = 'error'
+
+
+EngineInterface = namedtuple(
+    'EngineInterface',
+    ['driver', 'program_file_name', 'to_driver_queue', 'parser'],
+    )

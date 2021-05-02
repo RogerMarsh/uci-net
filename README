@@ -49,7 +49,7 @@ Runtime dependencies
 Notes
 =====
 
-The dependency on the incomplete `clientserver`_ package has been disabled in this release so it can be used by 'ChessScorepad`_ to ask local chess engines to evaluate positions.
+The dependency on the incomplete `clientserver`_ package has been disabled in this release so it can be used by 'ChessTab`_ to ask local chess engines to evaluate positions.
 
 It is very easy to do the wrong command at the wrong time given the difference in protocol style between UCI and client server.
 
@@ -57,4 +57,4 @@ It is very easy to do the wrong command at the wrong time given the difference i
 .. _`Python`: https://python.org
 .. _'clientserver': http://www.solentware.co.uk/download.html
 .. _`Universal Chess Interface`: https://en.wikipedia.org/wiki/Universal_Chess_Interface
-.. _`ChessScorepad`: http://www.solentware.co.uk/download.html
+.. _`ChessTab`: http://www.solentware.co.uk/download.html

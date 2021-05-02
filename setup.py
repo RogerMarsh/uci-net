@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     setup(
         name='uci',
-        version='0.1.1',
+        version='1.0',
         description='Universal Chess interface client-server conversation',
         author='Roger Marsh',
         author_email='roger.marsh@solentware.co.uk',
@@ -28,14 +28,10 @@ if __name__ == '__main__':
         license='BSD',
         classifiers=[
             'License :: OSI Approved :: BSD License',
-            'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.6',
             'Operating System :: OS Independent',
             'Topic :: Software Development',
             'Intended Audience :: Developers',
             'Development Status :: 4 - Beta',
             ],
-        #install_requires=['clientserver==0.1'],
-        #dependency_links=[
-        #    'http://solentware.co.uk/files/clientserver-0.1.tar.gz'],
         )
