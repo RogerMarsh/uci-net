@@ -9,20 +9,20 @@ if __name__ == '__main__':
     long_description = open('README').read()
 
     setup(
-        name='uci',
-        version='1.0',
-        description='Universal Chess interface client-server conversation',
+        name='uci-net',
+        version='1.1',
+        description='Universal Chess Interface client-server conversation',
         author='Roger Marsh',
         author_email='roger.marsh@solentware.co.uk',
         url='http://www.solentware.co.uk',
-        package_dir={'uci':''},
+        package_dir={'uci_net':''},
         packages=[
-            'uci',
-            'uci.samples',
-            'uci.about',
+            'uci_net',
+            'uci_net.samples',
+            'uci_net.about',
             ],
         package_data={
-            'uci.about': ['LICENCE', 'CONTACT'],
+            'uci_net.about': ['LICENCE', 'CONTACT'],
             },
         long_description=long_description,
         license='BSD',
