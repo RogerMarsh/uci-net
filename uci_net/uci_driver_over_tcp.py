@@ -2,9 +2,7 @@
 # Copyright 2017 Roger Marsh
 # License: See LICENSE.TXT (BSD licence)
 
-"""Universal Chess Interface (UCI) communication with chess engine driver.
-
-"""
+"""Universal Chess Interface (UCI) communication with chess engine driver."""
 
 import sys
 from urllib.parse import urlsplit
@@ -13,9 +11,7 @@ from .uci_driver import UCIDriver
 
 
 class UCIDriverOverTCP(UCIDriver):
-    """Implement communication with chess engine processes.
-
-    """
+    """Implement communication with chess engine processes."""
 
     def insert_remote_hostname_port(self, args):
         """Prepend args with tcp_client command if args[0] has hostname or port.

@@ -22,10 +22,9 @@ from .engine import CommandsFromEngine, CommandsToEngine
 _TERMINATE_PENDING = frozenset((CommandsToEngine.uci, CommandsToEngine.stop))
 
 
-class UCIDriver(object):
-    """Give commands to chess engine and collect responses using UCI protocol.
+class UCIDriver:
+    """Give commands to chess engine and collect UCI protocol responses."""
 
-    """
     def __init__(self, to_ui_queue, ui_name):
         """Initialize with queue for responses to named user interface."""
         self.to_ui_queue = to_ui_queue
@@ -63,7 +62,7 @@ class UCIDriver(object):
 
         """
         if self.engine_process:
-            return
+            return None
 
         # Use parent's console on Microsoft Windows
         if sys.platform == 'win32':
@@ -133,35 +132,34 @@ class UCIDriver(object):
         is not.
 
         """
-        e = self.engine_process
-        r = self.engine_process_responses
-        t = CommandsFromEngine.terminators
-        while e.poll() is None:
+        eng = self.engine_process
+        epr = self.engine_process_responses
+        cfet = CommandsFromEngine.terminators
+        while eng.poll() is None:
 
             # On Windows 10 Ctrl C while waiting for a response from the UCI
             # engine will often give a ValueError exception citing I/O
-            # operation on closed file.  See startupinfo in start_engine().  
-            response = e.stdout.readline().rstrip()
+            # operation on closed file.  See startupinfo in start_engine().
+            response = eng.stdout.readline().rstrip()
 
             if not response:
                 continue
-            r.append(response)
-            if r[-1].split(maxsplit=1)[0] in t:
+            epr.append(response)
+            if epr[-1].split(maxsplit=1)[0] in cfet:
                 self._command_done.set()
                 self._responses_collected.wait()
                 self._responses_collected.clear()
 
     def _process_response_terminations(self):
-        """Process chess engine responses sent by _engine_response_catcher().
-        """
-        cs = self._commands_sent
+        """Process chess engine responses."""
+        cst = self._commands_sent
         epr = self.engine_process_responses
         tuq = self.to_ui_queue
         while True:
             self.wait_for_responses()
             response = []
-            while len(cs):
-                command_sent = cs.popleft()
+            while len(cst):
+                command_sent = cst.popleft()
                 if command_sent in _TERMINATE_PENDING:
                     self.collect_more_responses()
                     self.wait_for_responses_timeout(timeout=0.5)
@@ -172,17 +170,19 @@ class UCIDriver(object):
 
     def send_to_engine(self, command):
         """Write command to engine's stdin and note for reply processing."""
-        e = self.engine_process.stdin
-        e.write(command)
-        e.write('\n')
-        e.flush()
+        eps = self.engine_process.stdin
+        eps.write(command)
+        eps.write('\n')
+        eps.flush()
         self._commands_sent.append(command.split(None, maxsplit=1)[0])
 
     def wait_for_responses(self):
+        """Wait for responses from chess engines."""
         self._command_done.wait()
         self._command_done.clear()
 
     def collect_more_responses(self):
+        """Wait for more responses from chess engines."""
         self._responses_collected.set()
 
     def wait_for_responses_timeout(self, timeout=0.5):
@@ -199,3 +199,4 @@ class UCIDriver(object):
         if self._command_done.wait(timeout):
             self._command_done.clear()
             return True
+        return None

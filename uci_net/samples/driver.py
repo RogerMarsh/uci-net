@@ -18,7 +18,7 @@ from ..engine import CommandsToEngine
 
 # Copied from chesstab/core/uci.py
 def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
-    """"""
+    """Run the process or thread driving communication with chess engine."""
     driver = UCIDriverOverTCP(to_ui_queue, ui_name)
     try:
         driver.start_engine(path, args)
@@ -35,9 +35,14 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
 
 
 class EngineOutput:
+    """An application to communicate with chess engines with UCI commands.
+
+    The commands are typed by the user and engine responses are displayed.
+
+    """
 
     def __init__(self):
-
+        """Start application."""
         self.uci_drivers_reply = multiprocessing.Queue()
         self.uci_drivers = dict()
         self.counter = 0
@@ -121,31 +126,31 @@ class EngineOutput:
         self.get_engine_responses()
 
     def quit_program(self):
-        
+        """Quit."""
         quitmsg = 'Confirm Quit.'
         dlg = tkinter.messagebox.askquestion(title='Quit', message=quitmsg)
         if dlg == tkinter.messagebox.YES:
-            for ud, v in self.uci_drivers.items():
+            for ucid, value in self.uci_drivers.items():
                 try:
-                    v[1].put(CommandsToEngine.quit_)
+                    value[1].put(CommandsToEngine.quit_)
                 except:
                     tkinter.messagebox.showinfo(
                         title='Stop Engine',
                         message=''.join((
-                            v[0],
+                            value[0],
                             ' failed to stop.\n\nYou may have to kill',
                             ' process id ',
-                            str(ud.pid),
+                            str(ucid.pid),
                             ' manually after this progam finishes.',
                             )),
                         )
-            for ud in self.uci_drivers:
-                ud.join()
+            for ucid in self.uci_drivers:
+                ucid.join()
             self.uci_drivers.clear()
             self.root.destroy()
 
     def start_local_engine(self):
-
+        """Start chess engine by specifying local executable filename."""
         if sys.platform == 'win32':
             filetypes = (('Chess Engines', '*.exe'),)
         else:
@@ -160,6 +165,7 @@ class EngineOutput:
             return
 
         def get(event):
+            # get is bound to a tkinter.Entry widget as the callback.
             text = self._contents.get()
             url = urlsplit(text)
             if url.port or url.hostname:
@@ -176,8 +182,9 @@ class EngineOutput:
         self.do_command(engine, get)
 
     def start_remote_engine(self):
-
+        """Start chess engine by specifying URL with hostname and port."""
         def get(event):
+            # get is bound to a tkinter.Entry widget as the callback.
             text = self._contents.get()
             url = urlsplit(text)
             if not (url.port and url.hostname):
@@ -193,7 +200,7 @@ class EngineOutput:
         self.do_command('//', get)
 
     def do_command(self, initial_value, callback):
-            
+        """Process engine command typed by user with callback function."""
         self._command = initial_value.split(None, maxsplit=1)[0]
         self._toplevel = tkinter.Toplevel(self.root)
         entrythingy = tkinter.Entry(self._toplevel)
@@ -204,7 +211,7 @@ class EngineOutput:
         entrythingy.bind('<Key-Return>', callback)
 
     def run_engine(self, program_file_name, args):
-        
+        """Run chess engine program_file_name in a separate process."""
         self.counter += 1
         ui_name = ' : '.join((str(self.counter), program_file_name))
         to_driver_queue = multiprocessing.Queue()
@@ -220,7 +227,11 @@ class EngineOutput:
         self.uci_drivers[driver] = (program_file_name, to_driver_queue)
 
     def send_to_all_engines(self, event):
+        """Send a command to all engines.
 
+        send_to_all_engines is bound to a tkinter.Entry widget as the callback.
+
+        """
         command = self._contents.get()
         if command.split()[0] != self._command:
             if tkinter.messagebox.askquestion(
@@ -255,51 +266,51 @@ class EngineOutput:
         del self._toplevel
 
     def uci(self):
-
+        """Send uci command to all engines."""
         self.do_command(CommandsToEngine.uci, self.send_to_all_engines)
 
     def debug(self):
-
+        """Send debug command to all engines."""
         self.do_command(CommandsToEngine.debug, self.send_to_all_engines)
 
     def isready(self):
-
+        """Send isready command to all engines."""
         self.do_command(CommandsToEngine.isready, self.send_to_all_engines)
 
     def setoption(self):
-
+        """Send setoption command to all engines."""
         self.do_command(CommandsToEngine.setoption, self.send_to_all_engines)
 
     def register(self):
-
+        """Send register command to all engines."""
         self.do_command(CommandsToEngine.register, self.send_to_all_engines)
 
     def ucinewgame(self):
-
+        """Send newgame command to all engines."""
         self.do_command(CommandsToEngine.ucinewgame, self.send_to_all_engines)
 
     def position(self):
-
+        """Send position command to all engines."""
         self.do_command(CommandsToEngine.position, self.send_to_all_engines)
 
     def go(self):
-
+        """Send go command to all engines."""
         self.do_command(CommandsToEngine.go, self.send_to_all_engines)
 
     def stop(self):
-
+        """Send stop command to all engines."""
         self.do_command(CommandsToEngine.stop, self.send_to_all_engines)
 
     def ponderhit(self):
-
+        """Send ponderhit command to all engines."""
         self.do_command(CommandsToEngine.ponderhit, self.send_to_all_engines)
 
     def quit_(self):
-
+        """Send quit command to all engines."""
         self.do_command(CommandsToEngine.quit_, self.send_to_all_engines)
 
     def get_engine_responses(self):
-
+        """Process engine responses."""
         text = self.text
         self.root.after(1000, self.get_engine_responses)
         while True:
@@ -308,17 +319,17 @@ class EngineOutput:
             except Empty:
                 break
             try:
-                n, r = item
-                text.insert(tkinter.END, ''.join((str(n), '\n')))
-                for i in r:
+                name, response = item
+                text.insert(tkinter.END, ''.join((str(name), '\n')))
+                for clause in response:
                     try:
-                        text.insert(tkinter.END, i)
+                        text.insert(tkinter.END, clause)
                     except:
                         text.insert(tkinter.END, '*** unable to insert item')
                     text.insert(tkinter.END, '\n')
             except:
                 text.insert(tkinter.END, '*** unable to insert any items')
-            
+
 
 if __name__ == '__main__':
 

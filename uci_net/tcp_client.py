@@ -62,7 +62,6 @@ import tkinter.messagebox
 
 from .engine import (
     CommandsToEngine,
-    CommandsFromEngine,
     ReservedOptionNames,
     GoSubCommands,
     PositionSubCommands,
@@ -74,15 +73,16 @@ GO_COMMAND_SEQUENCE = [CommandsToEngine.setoption, CommandsToEngine.position]
 
 
 class UCIClientProtocol(asyncio.Protocol):
-    """Implement communication with chess engine processes over TCP.
-    """
+    """Implement communication with chess engine processes over TCP."""
 
     def __init__(self, message, loop):
+        """Initialize instance to send message and receive reply."""
         self.message = message
         self.loop = loop
         self.data_from_engine = []
 
     def connection_made(self, transport):
+        """Write message on transport after connection made."""
         transport.write(self.message.encode())
         try:
             transport.write_eof()
@@ -90,15 +90,17 @@ class UCIClientProtocol(asyncio.Protocol):
             pass
 
     def data_received(self, data):
+        """Collect response to message."""
         self.data_from_engine.append(data)
 
     def connection_lost(self, exc):
+        """Write response to stdout after connection finished."""
         self.loop.stop()
         response = b''.join(self.data_from_engine).decode().strip()
         if response:
             response = literal_eval(response)
-            for r in response[-1]:
-                sys.stdout.write(r + '\n')
+            for text in response[-1]:
+                sys.stdout.write(text + '\n')
                 sys.stdout.flush()
 
 

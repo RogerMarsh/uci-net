@@ -13,12 +13,9 @@ import re
 from copy import deepcopy
 
 
-class EngineError(Exception):
-    pass
-
-
-class CommandsToEngine(object):
+class CommandsToEngine:
     """The names of commands sent to engines."""
+
     uci = 'uci'
     debug = 'debug'
     isready = 'isready'
@@ -33,8 +30,9 @@ class CommandsToEngine(object):
     start = 'start'
 
 
-class GoSubCommands(object):
+class GoSubCommands:
     """The names of sub-commands of the go command sent to engines."""
+
     searchmoves = 'searchmoves'
     ponder = 'ponder'
     wtime = 'wtime'
@@ -49,21 +47,24 @@ class GoSubCommands(object):
     infinite = 'infinite'
 
 
-class PositionSubCommands(object):
+class PositionSubCommands:
     """The names of sub-commands of the position command sent to engines."""
+
     fen = 'fen'
     startpos = 'startpos'
     moves = 'moves'
 
 
-class SetoptionSubCommands(object):
+class SetoptionSubCommands:
     """The names of sub-commands of the setoption command sent to engines."""
+
     name = 'name'
     value = 'value'
 
 
-class CommandsFromEngine(object):
+class CommandsFromEngine:
     """The names of commands sent by engines."""
+
     id_ = 'id'
     uciok = 'uciok'
     readyok = 'readyok'
@@ -89,7 +90,7 @@ class CommandsFromEngine(object):
 
     # Regular expression to parse text from engine for command
     # re = '\s+(name|type|default|min|max|var)\s+'
-    cfere = re.compile('|'.join(all_).join(('(?:\A|\s+)(', ')(?:\s+|\Z)')))
+    cfere = re.compile('|'.join(all_).join((r'(?:\A|\s+)(', r')(?:\s+|\Z)')))
 
     @staticmethod
     def parse_command(text):
@@ -113,8 +114,9 @@ class CommandsFromEngine(object):
         return cfesplit[1]
 
 
-class IdParameters(object):
+class IdParameters:
     """The names of parameters in the id command."""
+
     name = 'name'
     author = 'author'
 
@@ -122,7 +124,7 @@ class IdParameters(object):
 
     # Regular expression to parse option command
     # re = '(?<= )(name|author)\s+'
-    ipre = re.compile('|'.join(all_).join(('(?<= )(', ')\s+')))
+    ipre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
 
     @staticmethod
     def parse_id(text):
@@ -142,14 +144,14 @@ class IdParameters(object):
         if ipsplit[0].split()[-1] != CommandsFromEngine.id_:
             return {}
 
-        o = {}
-        for p, v in [ipsplit[i:i+2] for i in range(1, len(ipsplit), 2)]:
-            o[p] = v
-        return o
+        out = {}
+        for key, value in [ipsplit[i:i+2] for i in range(1, len(ipsplit), 2)]:
+            out[key] = value
+        return out
 
 
-class OptionParameters(object):
-    """The names of parameters in the option command.
+class OptionParameters:
+    r"""The names of parameters in the option command.
 
     Quoted from the UCI specification (downloaded 9 August 2015):
 
@@ -177,6 +179,7 @@ class OptionParameters(object):
     The gnuchess and stockfish engines, for example, use this interpretation.
 
     """
+
     name = 'name'
     type_ = 'type'
     default = 'default'
@@ -190,7 +193,7 @@ class OptionParameters(object):
 
     # Regular expression to parse option command
     # re = '(?<= )(name|type|default|min|max|var)\s+'
-    opre = re.compile('|'.join(all_).join(('(?<= )(', ')\s+')))
+    opre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
 
     @staticmethod
     def parse_option(text):
@@ -204,21 +207,22 @@ class OptionParameters(object):
             return {}
 
         # Verify option command is not ambiguous only.
-        for p in op.name, op.type_, op.default, op.min_, op.max_:
-            if opsplit.count(p) > 1:
+        for item in op.name, op.type_, op.default, op.min_, op.max_:
+            if opsplit.count(item) > 1:
                 return {}
 
-        o = {}
-        for p, v in [opsplit[i:i+2] for i in range(1, len(opsplit), 2)]:
-            if p in op.multi:
-                o.setdefault(p, []).append(v)
+        out = {}
+        for key, value in [opsplit[i:i+2] for i in range(1, len(opsplit), 2)]:
+            if key in op.multi:
+                out.setdefault(key, []).append(value)
             else:
-                o[p] = v
-        return o
+                out[key] = value
+        return out
 
 
-class OptionTypes(object):
+class OptionTypes:
     """The values of type and <Type> in the <Type>Option namedtuples."""
+
     button = 'button'
     check = 'check'
     combo = 'combo'
@@ -233,7 +237,7 @@ SpinOption = namedtuple('SpinOption', ('name', 'type', 'default', 'min', 'max'))
 StringOption = namedtuple('StringOption', ('name', 'type', 'default'))
 
 
-class ReservedOptionNames(object):
+class ReservedOptionNames:
     """The names of options defined in UCI specification.
 
     Any names starting 'UCI_' not in type_ are invalid and thus ignored.
@@ -242,9 +246,10 @@ class ReservedOptionNames(object):
     specific.
 
     """
+
     _false = 'false'
     _true = 'true'
-    _check_values = frozenset((_true, _false))
+    check_values = frozenset((_true, _false))
 
     clear_hash = 'Clear Hash'
     empty_string = '<empty>'
@@ -314,26 +319,26 @@ def option(name=None, type_=None, default=None, min_=None, max_=None, var=None):
     """
     if not isinstance(name, str):
         return None
-    if ReservedOptionNames.isinvalid_defined_option(
+    if ReservedOptionNames.is_invalid_defined_option(
         name=name, type_=type_, default=default, min_=min_, max_=max_, var=var):
         return None
     if type_ == OptionTypes.button:
         return CheckOption(name=name, type=OptionTypes.button)
-    elif type_ == OptionTypes.check:
-        if not default in _check_values:
+    if type_ == OptionTypes.check:
+        if not default in ReservedOptionNames.check_values:
             return None
         return ButtonOption(name=name, type=OptionTypes.check, default=default)
-    elif type_ == OptionTypes.combo:
+    if type_ == OptionTypes.combo:
         if not isinstance(default, str):
             return None
-        for v in var:
-            if not isinstance(v, str):
+        for item in var:
+            if not isinstance(item, str):
                 return None
         return ComboOption(
             name=name, type=OptionTypes.combo, default=default, var=tuple(var))
-    elif type_ == OptionTypes.spin:
-        for a in default, min_, max_:
-            if not a.isdigit():
+    if type_ == OptionTypes.spin:
+        for spin in default, min_, max_:
+            if not spin.isdigit():
                 return None
         return SpinOption(
             name=name,
@@ -341,15 +346,15 @@ def option(name=None, type_=None, default=None, min_=None, max_=None, var=None):
             default=default,
             min=min_,
             max=max_)
-    elif type_ == OptionTypes.string:
+    if type_ == OptionTypes.string:
         if not isinstance(default, str):
             return None
         return StringOption(name=name, type=OptionTypes.string, default=default)
     return None
 
 
-class InfoParameters(object):
-    """The names of parameters in the info command.
+class InfoParameters:
+    r"""The names of parameters in the info command.
 
     Quoted from the UCI specification (downloaded 9 August 2015):
 
@@ -437,6 +442,7 @@ class InfoParameters(object):
     the info commands adjacent.
 
     """
+
     depth = 'depth'
     seldepth = 'seldepth'
     time = 'time'
@@ -477,7 +483,7 @@ class InfoParameters(object):
 
     # Regular expression to parse info command
     # re = '(?<= )(depth|seldepth|time| ,,, |string|refutation|currline)\s+'
-    ipre = re.compile('|'.join(all_).join(('(?<= )(', ')\s+')))
+    ipre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
 
     @staticmethod
     def parse_info(text):
@@ -500,22 +506,23 @@ class InfoParameters(object):
             if ipsplit.count(i) > 1:
                 return {}
 
-        o = {}
-        for p, v in [ipsplit[i:i+2] for i in range(1, len(ipsplit), 2)]:
-            if p in ip.moves:
-                o.setdefault(p, []).append(v)
-            elif p == ip.currline:
-                o[p] = current_line(v)
-            elif p == ip.score:
-                o[p] = ScoreInfoValueNames.parse_score_info(
-                    ' '.join((ip.score, v)))
+        out = {}
+        for key, value in [ipsplit[i:i+2] for i in range(1, len(ipsplit), 2)]:
+            if key in ip.moves:
+                out.setdefault(key, []).append(value)
+            elif key == ip.currline:
+                out[key] = _current_line(value)
+            elif key == ip.score:
+                out[key] = ScoreInfoValueNames.parse_score_info(
+                    ' '.join((ip.score, value)))
             else:
-                o[p] = v
-        return o
+                out[key] = value
+        return out
 
 
-class ScoreInfoValueNames(object):
+class ScoreInfoValueNames:
     """The names of score info values and type of value if any."""
+
     cp = 'cp'
     mate = 'mate'
     lowerbound = 'lowerbound'
@@ -527,32 +534,32 @@ class ScoreInfoValueNames(object):
 
     # Regular expression to parse score info value
     # re = '(?<= )(cp|mate|lowerbound|upperbound)\s+'
-    sivnre = re.compile('|'.join(all_).join(('(?<= )(', ')\s+')))
+    sivnre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
 
     @staticmethod
     def parse_score_info(text):
         """Recturn dict of score info values extracted from text."""
         sivn = ScoreInfoValueNames
         sivnsplit = [t.strip() for t in sivn.sivnre.split(text)]
-        o = {}
+        out = {}
 
         # Extract lower and upper bound flags and verify not duplicated.
         # 'cp lowerbound' and so forth are not allowed.
         # Apply sivnre to text with flags removed.
         if sivn.flags.intersection(sivnsplit):
             words = text.split()
-            for f in sivn.flags:
-                if f in words:
-                    if words.count(f) > 1:
+            for flag in sivn.flags:
+                if flag in words:
+                    if words.count(flag) > 1:
                         return {}
-                    i = words.index(f)
-                    if words[i-1] in sivn.values:
+                    index = words.index(flag)
+                    if words[index-1] in sivn.values:
                         return {}
-                    if i != len(words) - 1:
-                        if words[i+1] not in sivn.all_:
+                    if index != len(words) - 1:
+                        if words[index+1] not in sivn.all_:
                             return {}
-            for f in sivn.flags:
-                words.remove(f)
+            for flag in sivn.flags:
+                words.remove(flag)
             sivnsplit = [t.strip() for t in sivn.sivnre.split(' '.join(words))]
 
         # 'score cp <n> mate <m>' without <junk> is fine.
@@ -560,30 +567,30 @@ class ScoreInfoValueNames(object):
             return {}
 
         # Verify score info, cp and mate, is not ambiguous only.
-        for s in sivn.values:
-            if sivnsplit.count(s) > 1:
+        for item in sivn.values:
+            if sivnsplit.count(item) > 1:
                 return {}
 
-        for p, v in [sivnsplit[i:i+2] for i in range(1, len(sivnsplit), 2)]:
-            if p in sivn.values:
-                o[p] = v
+        for key, value in [sivnsplit[i:i+2]
+                           for i in range(1, len(sivnsplit), 2)]:
+            if key in sivn.values:
+                out[key] = value
             else:
                 return {}
-        return o
+        return out
 
 
-def current_line(text):
+def _current_line(text):
     """Return a ( <cpu number>, ( <move1>, ... ) ) tuple from text.
 
     If the first word of text is digits it is the CPU number.  Otherwise set
     the CPU number to None.
 
     """
-    t = text.split(maxsplit=1)
-    if t[0].isdigit():
-        return t[0], ' '.join(t[1:])
-    else:
-        return None, text
+    line = text.split(maxsplit=1)
+    if line[0].isdigit():
+        return line[0], ' '.join(line[1:])
+    return None, text
 
 
 InfoSnapshot = namedtuple('InfoSnapshot',
@@ -608,15 +615,16 @@ InfoSnapshot = namedtuple('InfoSnapshot',
                            ))
 
 
-class BestmoveParameters(object):
+class BestmoveParameters:
     """The names of parameters in the bestmove command."""
+
     ponder = 'ponder'
 
     all_ = frozenset((ponder,))
 
     # Regular expression to parse option command
     # re = '(?<= )(ponder)\s+'
-    bpre = re.compile('|'.join(all_).join(('(?<= )(', ')\s+')))
+    bpre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
 
     @staticmethod
     def parse_bestmove(text):
@@ -629,25 +637,25 @@ class BestmoveParameters(object):
         # 'bestmove <move>' or
         # 'bestmove <move> ponder <move>' or
         # are fine but <junk> any where after 'bestmove' is not.
-        
-        bm = bpsplit[0].split()
-        if len(bm) != 2:
+
+        bms = bpsplit[0].split()
+        if len(bms) != 2:
             return {}
-        if bm[0] != CommandsFromEngine.bestmove:
+        if bms[0] != CommandsFromEngine.bestmove:
             return {}
-        o = dict((bm,))
+        out = dict((bms,))
 
         # Verify bestmove is not ambiguous only.
-        for s in bp.all_:
-            if bpsplit.count(s) > 1:
+        for item in bp.all_:
+            if bpsplit.count(item) > 1:
                 return {}
 
-        for p, v in [bpsplit[i:i+2] for i in range(1, len(bpsplit), 2)]:
-            o[p] = v
-        return o
+        for key, value in [bpsplit[i:i+2] for i in range(1, len(bpsplit), 2)]:
+            out[key] = value
+        return out
 
 
-class Engine(object):
+class Engine:
     """The chess engine state according to commands from engine.
 
     Info commands from a chess engine are kept in the info attribute: a deque
@@ -662,6 +670,7 @@ class Engine(object):
     created between consecutive bestmove commands from a chess engine.
 
     """
+
     _empty_infosnapshot = InfoSnapshot(*[None]*(len(InfoParameters.all_) + 1))
 
     def __init__(self):
@@ -706,26 +715,26 @@ class Engine(object):
         pruning is done before the next 'go' command.
 
         """
-        bp = BestmoveParameters
-        bestmove = bp.parse_bestmove(text)
+        bps = BestmoveParameters
+        bestmove = bps.parse_bestmove(text)
         if bestmove:
             self.bestmove = (text, bestmove)
 
     def note_engine_id(self, text):
-        """"""
-        ip = IdParameters
-        id_ = ip.parse_id(text)
-        for k, v in id_.items():
-            if k in ip.all_:
+        """Note the engine identity extracted from text."""
+        ips = IdParameters
+        id_ = ips.parse_id(text)
+        for k, value in id_.items():
+            if k in ips.all_:
                 if hasattr(self, k):
-                    setattr(self, k, v)
+                    setattr(self, k, value)
 
     def note_engine_info(self, text):
-        """"""
-        ip = InfoParameters
-        info = ip.parse_info(text)
+        """Note the info (analysis) extracted from text."""
+        ips = InfoParameters
+        info = ips.parse_info(text)
         if info:
-            if ip.pv in info:
+            if ips.pv in info:
 
                 # Not simply:
                 #pv_group = self.snapshot.pv_group
@@ -737,12 +746,12 @@ class Engine(object):
                 pv_group = self.snapshot.pv_group
                 if pv_group is None:
                     pv_group = dict()
-                depth = info.get(ip.depth)
+                depth = info.get(ips.depth)
                 if depth is not None:
                     if depth != self.snapshot.depth:
                         if pv_group is self.snapshot.pv_group:
                             pv_group = deepcopy(self.snapshot.pv_group)
-                pv_group[info.get(ip.multipv)] = info
+                pv_group[info.get(ips.multipv)] = info
                 self.snapshot = self.snapshot._replace(
                     pv_group=pv_group, **info)
 
@@ -751,14 +760,14 @@ class Engine(object):
             self.info.append((text, self.snapshot))
 
     def note_engine_option(self, text):
-        """"""
-        op = OptionParameters
-        option = op.parse_option(text)
-        if option:
-            self.options[option[op.name]] = (text, option)
+        """Note the engine option extracted from text."""
+        ops = OptionParameters
+        engine_option = ops.parse_option(text)
+        if engine_option:
+            self.options[engine_option[ops.name]] = (text, engine_option)
 
     def note_engine_command(self, text):
-        """"""
+        """Note the value for the command returned from engine in test."""
         cfe = CommandsFromEngine
         command = cfe.parse_command(text)
         if command == cfe.info:
@@ -771,15 +780,15 @@ class Engine(object):
             self.note_engine_id(text)
 
     def process_engine_response(self, response):
-        """"""
+        """Process engine commands in response if result code is true."""
         for command_to_engine, result_code, engine_commands in response:
             if result_code:
                 self.process_engine_commands(engine_commands)
 
     def process_engine_commands(self, commands):
-        """"""
-        n, c = commands
-        for i in c:
+        """Note the values in commands from engine."""
+        #n, c = commands
+        for i in commands[1]:
             self.note_engine_command(i)
 
     def initialize_info_snapshot(self):
@@ -788,39 +797,39 @@ class Engine(object):
         self.clear_snapshot()
 
     def clear_snapshot(self):
-        """"""
+        """Clear snapshot and bestmove."""
         self.snapshot = self._empty_infosnapshot._replace(pv_group={})
         self.bestmove = None
 
     @property
     def readyok_expected(self):
-        """"""
+        """Return readyok_expected."""
         return self._readyok_expected
 
     @readyok_expected.setter
     def readyok_expected(self, value):
-        """"""
+        """Set readyok_expected to value: True or False."""
         self._readyok_expected = bool(value)
 
     @property
     def uciok_expected(self):
-        """"""
+        """Return uciok_expected."""
         return self._uciok_expected
 
     @uciok_expected.setter
     def uciok_expected(self, value):
-        """"""
+        """Set uciok_expected to value: True or False."""
         self._uciok_expected = bool(value)
 
     def set_copyprotection(self, status):
-        """"""
+        """Set copyprotection to status: 'ok' or 'checking'."""
         if status in ('ok', 'checking'):
             self.copyprotection = status
         else:
             self.copyprotection = 'error'
 
     def set_registration(self, status):
-        """"""
+        """Set registration to status: 'ok', 'checking', or False."""
         if status in ('ok', 'checking', False):
             self.registration = status
         else:

@@ -47,8 +47,6 @@ from .uci_driver import UCIDriver
 from .engine import (
     CommandsToEngine,
     ReservedOptionNames,
-    GoSubCommands,
-    PositionSubCommands,
     CommandsFromEngine,
     SetoptionSubCommands,
     )
@@ -59,8 +57,7 @@ UCI_ENGINE_LISTEN_HOSTNAME = '0.0.0.0'
 # This side of "if __name__ == '__main__'" so multiprocessing.Process() target
 # reference works on Microsoft Windows.
 def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
-    """Start UCI chess engine and enter loop sending queued resuests to engine.
-    """
+    """Start chess engine and enter loop sending queued requests to engine."""
     driver = UCIDriver(to_ui_queue, ui_name)
     try:
         driver.start_engine(path, args)
@@ -89,9 +86,9 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
 if __name__ == '__main__':
 
 
-    @asyncio.coroutine
-    def handle_client_uci_commands(reader, writer):
-        data = yield from reader.read()
+    async def handle_client_uci_commands(reader, writer):
+        """Handle UCI commands received on reader and reply on writer."""
+        data = await reader.read()
         message = data.decode()
 
         commands = literal_eval(message)
@@ -120,26 +117,28 @@ if __name__ == '__main__':
             to_driver_queue.put(CommandsToEngine.ucinewgame)
             to_driver_queue.put(CommandsToEngine.isready)
             while True:
-                n, c = uci_drivers_reply.get()
-                if c[-1].split(maxsplit=1)[0] == CommandsFromEngine.readyok:
+                #n, c = uci_drivers_reply.get()
+                item = uci_drivers_reply.get()[1]
+                if item[-1].split(maxsplit=1)[0] == CommandsFromEngine.readyok:
                     break
             to_driver_queue.put(
                 ' '.join(
                     (CommandsToEngine.setoption,
                      SetoptionSubCommands.name,
                      ReservedOptionNames.clear_hash)))
-            for c in commands:
-                to_driver_queue.put(c)
+            for item in commands:
+                to_driver_queue.put(item)
             reply = []
             while True:
-                n, c = uci_drivers_reply.get()
-                reply.extend(c)
-                if c[-1].split(maxsplit=1)[0] == CommandsFromEngine.bestmove:
+                #n, c = uci_drivers_reply.get()
+                item = uci_drivers_reply.get()[1]
+                reply.extend(item)
+                if item[-1].split(maxsplit=1)[0] == CommandsFromEngine.bestmove:
                     break
             reply = repr((engine_name, reply))
             writer.write(reply.encode())
 
-        yield from writer.drain()
+        await writer.drain()
 
         writer.close()
 
@@ -155,14 +154,16 @@ if __name__ == '__main__':
         the server.
 
         """
+
         listen_port = 11111
         allowed_callers = ()
 
         def __init__(self, listen_port=None, allowed_callers=None):
+            """Initialise to listen for allowed_callers on listen_port."""
             if listen_port is not None:
                 self.listen_port = listen_port
             if isinstance(allowed_callers, str):
-                self.allowed_callers = allowed_callers,
+                self.allowed_callers = (allowed_callers,)
             elif allowed_callers is not None:
                 self.allowed_callers = tuple(allowed_callers)
 
@@ -227,7 +228,7 @@ if __name__ == '__main__':
 
     # If this done here rather than in run_driver() Contol-c is ignored later.
     #to_driver_queue.put(CommandsToEngine.uci)
-    
+
     uciok_item = uci_drivers_reply.get()
     if uciok_item[0] == 'start failed':
         sys.stdout.write('Unable to start chess engine.\n')
@@ -271,5 +272,7 @@ if __name__ == '__main__':
     sys.stdout.write('\nClosed\n')
 
     # Terminate the driver
-    driver.terminate()
-    driver.join(10)
+    while True:
+        driver.join(10)
+        if not driver.is_alive():
+            break
