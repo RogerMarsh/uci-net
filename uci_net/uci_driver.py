@@ -65,17 +65,19 @@ class UCIDriver:
             return None
 
         # Use parent's console on Microsoft Windows
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         else:
             startupinfo = None
 
         self._engine_response_handler = dummy.Process(
-            target=self._engine_response_catcher)
+            target=self._engine_response_catcher
+        )
         self._engine_response_handler.daemon = True
         self._termination_handler = dummy.Process(
-            target=self._process_response_terminations)
+            target=self._process_response_terminations
+        )
         self._termination_handler.daemon = True
         if args:
             args = shlex.split(args)
@@ -89,7 +91,8 @@ class UCIDriver:
             stdout=subprocess.PIPE,
             bufsize=1,
             universal_newlines=True,
-            startupinfo=startupinfo)
+            startupinfo=startupinfo,
+        )
         self._engine_response_handler.start()
         self._termination_handler.start()
 
@@ -110,7 +113,8 @@ class UCIDriver:
         """Send UCI quit to engine and kill engine process after 15 seconds."""
         try:
             outs, errs = self.engine_process.communicate(
-                CommandsToEngine.quit_, timeout=15)
+                CommandsToEngine.quit_, timeout=15
+            )
         except subprocess.TimeoutExpired:
             self.engine_process.kill()
             outs, errs = self.engine_process.communicate()
@@ -172,7 +176,7 @@ class UCIDriver:
         """Write command to engine's stdin and note for reply processing."""
         eps = self.engine_process.stdin
         eps.write(command)
-        eps.write('\n')
+        eps.write("\n")
         eps.flush()
         self._commands_sent.append(command.split(None, maxsplit=1)[0])
 

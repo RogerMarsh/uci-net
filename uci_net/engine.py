@@ -16,81 +16,83 @@ from copy import deepcopy
 class CommandsToEngine:
     """The names of commands sent to engines."""
 
-    uci = 'uci'
-    debug = 'debug'
-    isready = 'isready'
-    setoption = 'setoption'
-    register = 'register'
-    ucinewgame = 'ucinewgame'
-    position = 'position'
-    go = 'go'
-    stop = 'stop'
-    ponderhit = 'ponderhit'
-    quit_ = 'quit'
-    start = 'start'
+    uci = "uci"
+    debug = "debug"
+    isready = "isready"
+    setoption = "setoption"
+    register = "register"
+    ucinewgame = "ucinewgame"
+    position = "position"
+    go = "go"
+    stop = "stop"
+    ponderhit = "ponderhit"
+    quit_ = "quit"
+    start = "start"
 
 
 class GoSubCommands:
     """The names of sub-commands of the go command sent to engines."""
 
-    searchmoves = 'searchmoves'
-    ponder = 'ponder'
-    wtime = 'wtime'
-    btime = 'btime'
-    winc = 'winc'
-    binc = 'binc'
-    movestogo = 'movestogo'
-    depth = 'depth'
-    nodes = 'nodes'
-    mate = 'mate'
-    movetime = 'movetime'
-    infinite = 'infinite'
+    searchmoves = "searchmoves"
+    ponder = "ponder"
+    wtime = "wtime"
+    btime = "btime"
+    winc = "winc"
+    binc = "binc"
+    movestogo = "movestogo"
+    depth = "depth"
+    nodes = "nodes"
+    mate = "mate"
+    movetime = "movetime"
+    infinite = "infinite"
 
 
 class PositionSubCommands:
     """The names of sub-commands of the position command sent to engines."""
 
-    fen = 'fen'
-    startpos = 'startpos'
-    moves = 'moves'
+    fen = "fen"
+    startpos = "startpos"
+    moves = "moves"
 
 
 class SetoptionSubCommands:
     """The names of sub-commands of the setoption command sent to engines."""
 
-    name = 'name'
-    value = 'value'
+    name = "name"
+    value = "value"
 
 
 class CommandsFromEngine:
     """The names of commands sent by engines."""
 
-    id_ = 'id'
-    uciok = 'uciok'
-    readyok = 'readyok'
-    bestmove = 'bestmove'
-    copyprotection = 'copyprotection'
-    registration = 'registration'
-    info = 'info'
-    option = 'option'
+    id_ = "id"
+    uciok = "uciok"
+    readyok = "readyok"
+    bestmove = "bestmove"
+    copyprotection = "copyprotection"
+    registration = "registration"
+    info = "info"
+    option = "option"
 
-    all_ = frozenset((id_,
-                      uciok,
-                      readyok,
-                      bestmove,
-                      copyprotection,
-                      registration,
-                      info,
-                      option))
-    terminators = frozenset((uciok,
-                             readyok,
-                             bestmove,
-                             copyprotection,
-                             registration))
+    all_ = frozenset(
+        (
+            id_,
+            uciok,
+            readyok,
+            bestmove,
+            copyprotection,
+            registration,
+            info,
+            option,
+        )
+    )
+    terminators = frozenset(
+        (uciok, readyok, bestmove, copyprotection, registration)
+    )
 
     # Regular expression to parse text from engine for command
     # re = '\s+(name|type|default|min|max|var)\s+'
-    cfere = re.compile('|'.join(all_).join((r'(?:\A|\s+)(', r')(?:\s+|\Z)')))
+    cfere = re.compile("|".join(all_).join((r"(?:\A|\s+)(", r")(?:\s+|\Z)")))
 
     @staticmethod
     def parse_command(text):
@@ -117,14 +119,14 @@ class CommandsFromEngine:
 class IdParameters:
     """The names of parameters in the id command."""
 
-    name = 'name'
-    author = 'author'
+    name = "name"
+    author = "author"
 
     all_ = frozenset((name, author))
 
     # Regular expression to parse option command
     # re = '(?<= )(name|author)\s+'
-    ipre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
+    ipre = re.compile("|".join(all_).join((r"(?<= )(", r")\s+")))
 
     @staticmethod
     def parse_id(text):
@@ -145,7 +147,9 @@ class IdParameters:
             return {}
 
         out = {}
-        for key, value in [ipsplit[i:i+2] for i in range(1, len(ipsplit), 2)]:
+        for key, value in [
+            ipsplit[i : i + 2] for i in range(1, len(ipsplit), 2)
+        ]:
             out[key] = value
         return out
 
@@ -180,12 +184,12 @@ class OptionParameters:
 
     """
 
-    name = 'name'
-    type_ = 'type'
-    default = 'default'
-    min_ = 'min'
-    max_ = 'max'
-    var = 'var'
+    name = "name"
+    type_ = "type"
+    default = "default"
+    min_ = "min"
+    max_ = "max"
+    var = "var"
     all_ = frozenset((name, type_, default, min_, max_, var))
 
     # The multi-value parameters
@@ -193,7 +197,7 @@ class OptionParameters:
 
     # Regular expression to parse option command
     # re = '(?<= )(name|type|default|min|max|var)\s+'
-    opre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
+    opre = re.compile("|".join(all_).join((r"(?<= )(", r")\s+")))
 
     @staticmethod
     def parse_option(text):
@@ -212,7 +216,9 @@ class OptionParameters:
                 return {}
 
         out = {}
-        for key, value in [opsplit[i:i+2] for i in range(1, len(opsplit), 2)]:
+        for key, value in [
+            opsplit[i : i + 2] for i in range(1, len(opsplit), 2)
+        ]:
             if key in op.multi:
                 out.setdefault(key, []).append(value)
             else:
@@ -223,18 +229,20 @@ class OptionParameters:
 class OptionTypes:
     """The values of type and <Type> in the <Type>Option namedtuples."""
 
-    button = 'button'
-    check = 'check'
-    combo = 'combo'
-    spin = 'spin'
-    string = 'string'
+    button = "button"
+    check = "check"
+    combo = "combo"
+    spin = "spin"
+    string = "string"
 
 
-ButtonOption = namedtuple('ButtonOption', ('name', 'type'))
-CheckOption = namedtuple('CheckOption', ('name', 'type', 'default'))
-ComboOption = namedtuple('ComboOption', ('name', 'type', 'default', 'var'))
-SpinOption = namedtuple('SpinOption', ('name', 'type', 'default', 'min', 'max'))
-StringOption = namedtuple('StringOption', ('name', 'type', 'default'))
+ButtonOption = namedtuple("ButtonOption", ("name", "type"))
+CheckOption = namedtuple("CheckOption", ("name", "type", "default"))
+ComboOption = namedtuple("ComboOption", ("name", "type", "default", "var"))
+SpinOption = namedtuple(
+    "SpinOption", ("name", "type", "default", "min", "max")
+)
+StringOption = namedtuple("StringOption", ("name", "type", "default"))
 
 
 class ReservedOptionNames:
@@ -247,29 +255,29 @@ class ReservedOptionNames:
 
     """
 
-    _false = 'false'
-    _true = 'true'
+    _false = "false"
+    _true = "true"
     check_values = frozenset((_true, _false))
 
-    clear_hash = 'Clear Hash'
-    empty_string = '<empty>'
-    reserved_prefix = 'UCI_'
-    Hash = 'Hash'
-    NalimovPath = 'NalimovPath'
-    NalimovCache = 'NalimovCache'
-    Ponder = 'Ponder'
-    OwnBook = 'OwnBook'
-    MultiPV = 'MultiPV'
-    UCI_ShowCurrLine = 'UCI_ShowCurrLine'
-    UCI_ShowRefutations = 'UCI_ShowRefutations'
-    UCI_LimitStrength = 'UCI_LimitStrength'
-    UCI_Elo = 'UCI_Elo'
-    UCI_AnalyseMode = 'UCI_AnalyseMode'
-    UCI_Opponent = 'UCI_Opponent'
-    UCI_EngineAbout = 'UCI_EngineAbout'
-    UCI_ShredderbasesPath = 'UCI_ShredderbasesPath'
-    UCI_SetPositionValue = 'UCI_SetPositionValue'
-    UCI_Chess960 = 'UCI_Chess960'
+    clear_hash = "Clear Hash"
+    empty_string = "<empty>"
+    reserved_prefix = "UCI_"
+    Hash = "Hash"
+    NalimovPath = "NalimovPath"
+    NalimovCache = "NalimovCache"
+    Ponder = "Ponder"
+    OwnBook = "OwnBook"
+    MultiPV = "MultiPV"
+    UCI_ShowCurrLine = "UCI_ShowCurrLine"
+    UCI_ShowRefutations = "UCI_ShowRefutations"
+    UCI_LimitStrength = "UCI_LimitStrength"
+    UCI_Elo = "UCI_Elo"
+    UCI_AnalyseMode = "UCI_AnalyseMode"
+    UCI_Opponent = "UCI_Opponent"
+    UCI_EngineAbout = "UCI_EngineAbout"
+    UCI_ShredderbasesPath = "UCI_ShredderbasesPath"
+    UCI_SetPositionValue = "UCI_SetPositionValue"
+    UCI_Chess960 = "UCI_Chess960"
     type_ = {
         Hash: OptionTypes.spin,
         NalimovPath: OptionTypes.string,
@@ -287,17 +295,18 @@ class ReservedOptionNames:
         UCI_ShredderbasesPath: OptionTypes.string,
         UCI_SetPositionValue: OptionTypes.string,
         UCI_Chess960: OptionTypes.check,
-        }
+    }
     default = {
-        MultiPV: '1',
+        MultiPV: "1",
         UCI_ShowCurrLine: _false,
         UCI_ShowRefutations: _false,
         UCI_LimitStrength: _false,
-        }
+    }
 
     @staticmethod
     def is_invalid_defined_option(
-        name=None, type_=None, default=None, min_=None, max_=None, var=None):
+        name=None, type_=None, default=None, min_=None, max_=None, var=None
+    ):
         """Return True if arguments are an invalid for a UCI defined option."""
         ron = ReservedOptionNames
         if name not in ron.type_:
@@ -311,7 +320,9 @@ class ReservedOptionNames:
         return False
 
 
-def option(name=None, type_=None, default=None, min_=None, max_=None, var=None):
+def option(
+    name=None, type_=None, default=None, min_=None, max_=None, var=None
+):
     """Return a <Type>Option instance for type_, or None if arguments invalid.
 
     UCI usually just ignores invalid options, so do the same here.
@@ -320,7 +331,8 @@ def option(name=None, type_=None, default=None, min_=None, max_=None, var=None):
     if not isinstance(name, str):
         return None
     if ReservedOptionNames.is_invalid_defined_option(
-        name=name, type_=type_, default=default, min_=min_, max_=max_, var=var):
+        name=name, type_=type_, default=default, min_=min_, max_=max_, var=var
+    ):
         return None
     if type_ == OptionTypes.button:
         return CheckOption(name=name, type=OptionTypes.button)
@@ -335,7 +347,8 @@ def option(name=None, type_=None, default=None, min_=None, max_=None, var=None):
             if not isinstance(item, str):
                 return None
         return ComboOption(
-            name=name, type=OptionTypes.combo, default=default, var=tuple(var))
+            name=name, type=OptionTypes.combo, default=default, var=tuple(var)
+        )
     if type_ == OptionTypes.spin:
         for spin in default, min_, max_:
             if not spin.isdigit():
@@ -345,11 +358,14 @@ def option(name=None, type_=None, default=None, min_=None, max_=None, var=None):
             type=OptionTypes.spin,
             default=default,
             min=min_,
-            max=max_)
+            max=max_,
+        )
     if type_ == OptionTypes.string:
         if not isinstance(default, str):
             return None
-        return StringOption(name=name, type=OptionTypes.string, default=default)
+        return StringOption(
+            name=name, type=OptionTypes.string, default=default
+        )
     return None
 
 
@@ -443,47 +459,50 @@ class InfoParameters:
 
     """
 
-    depth = 'depth'
-    seldepth = 'seldepth'
-    time = 'time'
-    nodes = 'nodes'
-    pv = 'pv'
-    multipv = 'multipv'
-    score = 'score'
-    currmove = 'currmove'
-    currmovenumber = 'currmovenumber'
-    hashfull = 'hashfull'
-    nps = 'nps'
-    tbhits = 'tbhits'
-    sbhits = 'sbhits'
-    cpuload = 'cpuload'
-    string = 'string'
-    refutation = 'refutation'
-    currline = 'currline'
+    depth = "depth"
+    seldepth = "seldepth"
+    time = "time"
+    nodes = "nodes"
+    pv = "pv"
+    multipv = "multipv"
+    score = "score"
+    currmove = "currmove"
+    currmovenumber = "currmovenumber"
+    hashfull = "hashfull"
+    nps = "nps"
+    tbhits = "tbhits"
+    sbhits = "sbhits"
+    cpuload = "cpuload"
+    string = "string"
+    refutation = "refutation"
+    currline = "currline"
 
-    all_ = frozenset((depth,
-                      seldepth,
-                      time,
-                      nodes,
-                      pv,
-                      multipv,
-                      score,
-                      currmove,
-                      currmovenumber,
-                      hashfull,
-                      nps,
-                      tbhits,
-                      sbhits,
-                      cpuload,
-                      string,
-                      refutation,
-                      currline,
-                      ))
+    all_ = frozenset(
+        (
+            depth,
+            seldepth,
+            time,
+            nodes,
+            pv,
+            multipv,
+            score,
+            currmove,
+            currmovenumber,
+            hashfull,
+            nps,
+            tbhits,
+            sbhits,
+            cpuload,
+            string,
+            refutation,
+            currline,
+        )
+    )
     moves = frozenset((pv, refutation))
 
     # Regular expression to parse info command
     # re = '(?<= )(depth|seldepth|time| ,,, |string|refutation|currline)\s+'
-    ipre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
+    ipre = re.compile("|".join(all_).join((r"(?<= )(", r")\s+")))
 
     @staticmethod
     def parse_info(text):
@@ -499,7 +518,7 @@ class InfoParameters:
         # The 'string' info escapes the rest of the line.
         if ip.string in ipsplit:
             i = ipsplit.index(ip.string)
-            ipsplit[i+1:] = [' '.join(ipsplit[i+1:])]
+            ipsplit[i + 1 :] = [" ".join(ipsplit[i + 1 :])]
 
         # Verify info command is not ambiguous only.
         for i in ip.all_:
@@ -507,14 +526,17 @@ class InfoParameters:
                 return {}
 
         out = {}
-        for key, value in [ipsplit[i:i+2] for i in range(1, len(ipsplit), 2)]:
+        for key, value in [
+            ipsplit[i : i + 2] for i in range(1, len(ipsplit), 2)
+        ]:
             if key in ip.moves:
                 out.setdefault(key, []).append(value)
             elif key == ip.currline:
                 out[key] = _current_line(value)
             elif key == ip.score:
                 out[key] = ScoreInfoValueNames.parse_score_info(
-                    ' '.join((ip.score, value)))
+                    " ".join((ip.score, value))
+                )
             else:
                 out[key] = value
         return out
@@ -523,10 +545,10 @@ class InfoParameters:
 class ScoreInfoValueNames:
     """The names of score info values and type of value if any."""
 
-    cp = 'cp'
-    mate = 'mate'
-    lowerbound = 'lowerbound'
-    upperbound = 'upperbound'
+    cp = "cp"
+    mate = "mate"
+    lowerbound = "lowerbound"
+    upperbound = "upperbound"
 
     all_ = frozenset((cp, mate, lowerbound, upperbound))
     values = frozenset((cp, mate))
@@ -534,7 +556,7 @@ class ScoreInfoValueNames:
 
     # Regular expression to parse score info value
     # re = '(?<= )(cp|mate|lowerbound|upperbound)\s+'
-    sivnre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
+    sivnre = re.compile("|".join(all_).join((r"(?<= )(", r")\s+")))
 
     @staticmethod
     def parse_score_info(text):
@@ -553,14 +575,14 @@ class ScoreInfoValueNames:
                     if words.count(flag) > 1:
                         return {}
                     index = words.index(flag)
-                    if words[index-1] in sivn.values:
+                    if words[index - 1] in sivn.values:
                         return {}
                     if index != len(words) - 1:
-                        if words[index+1] not in sivn.all_:
+                        if words[index + 1] not in sivn.all_:
                             return {}
             for flag in sivn.flags:
                 words.remove(flag)
-            sivnsplit = [t.strip() for t in sivn.sivnre.split(' '.join(words))]
+            sivnsplit = [t.strip() for t in sivn.sivnre.split(" ".join(words))]
 
         # 'score cp <n> mate <m>' without <junk> is fine.
         if sivnsplit[0] != InfoParameters.score:
@@ -571,8 +593,9 @@ class ScoreInfoValueNames:
             if sivnsplit.count(item) > 1:
                 return {}
 
-        for key, value in [sivnsplit[i:i+2]
-                           for i in range(1, len(sivnsplit), 2)]:
+        for key, value in [
+            sivnsplit[i : i + 2] for i in range(1, len(sivnsplit), 2)
+        ]:
             if key in sivn.values:
                 out[key] = value
             else:
@@ -589,42 +612,45 @@ def _current_line(text):
     """
     line = text.split(maxsplit=1)
     if line[0].isdigit():
-        return line[0], ' '.join(line[1:])
+        return line[0], " ".join(line[1:])
     return None, text
 
 
-InfoSnapshot = namedtuple('InfoSnapshot',
-                          (InfoParameters.depth,
-                           InfoParameters.seldepth,
-                           InfoParameters.time,
-                           InfoParameters.nodes,
-                           InfoParameters.pv,
-                           InfoParameters.multipv,
-                           InfoParameters.score,
-                           InfoParameters.currmove,
-                           InfoParameters.currmovenumber,
-                           InfoParameters.hashfull,
-                           InfoParameters.nps,
-                           InfoParameters.tbhits,
-                           InfoParameters.sbhits,
-                           InfoParameters.cpuload,
-                           InfoParameters.string,
-                           InfoParameters.refutation,
-                           InfoParameters.currline,
-                           'pv_group',
-                           ))
+InfoSnapshot = namedtuple(
+    "InfoSnapshot",
+    (
+        InfoParameters.depth,
+        InfoParameters.seldepth,
+        InfoParameters.time,
+        InfoParameters.nodes,
+        InfoParameters.pv,
+        InfoParameters.multipv,
+        InfoParameters.score,
+        InfoParameters.currmove,
+        InfoParameters.currmovenumber,
+        InfoParameters.hashfull,
+        InfoParameters.nps,
+        InfoParameters.tbhits,
+        InfoParameters.sbhits,
+        InfoParameters.cpuload,
+        InfoParameters.string,
+        InfoParameters.refutation,
+        InfoParameters.currline,
+        "pv_group",
+    ),
+)
 
 
 class BestmoveParameters:
     """The names of parameters in the bestmove command."""
 
-    ponder = 'ponder'
+    ponder = "ponder"
 
     all_ = frozenset((ponder,))
 
     # Regular expression to parse option command
     # re = '(?<= )(ponder)\s+'
-    bpre = re.compile('|'.join(all_).join((r'(?<= )(', r')\s+')))
+    bpre = re.compile("|".join(all_).join((r"(?<= )(", r")\s+")))
 
     @staticmethod
     def parse_bestmove(text):
@@ -650,7 +676,9 @@ class BestmoveParameters:
             if bpsplit.count(item) > 1:
                 return {}
 
-        for key, value in [bpsplit[i:i+2] for i in range(1, len(bpsplit), 2)]:
+        for key, value in [
+            bpsplit[i : i + 2] for i in range(1, len(bpsplit), 2)
+        ]:
             out[key] = value
         return out
 
@@ -671,7 +699,9 @@ class Engine:
 
     """
 
-    _empty_infosnapshot = InfoSnapshot(*[None]*(len(InfoParameters.all_) + 1))
+    _empty_infosnapshot = InfoSnapshot(
+        *[None] * (len(InfoParameters.all_) + 1)
+    )
 
     def __init__(self):
         """Create a database state instance."""
@@ -737,9 +767,9 @@ class Engine:
             if ips.pv in info:
 
                 # Not simply:
-                #pv_group = self.snapshot.pv_group
-                #pv_group[info.get(ip.multipv)] = info
-                #self.snapshot = self.snapshot._replace(**info)
+                # pv_group = self.snapshot.pv_group
+                # pv_group[info.get(ip.multipv)] = info
+                # self.snapshot = self.snapshot._replace(**info)
                 # because the UCI specification says 'should' not 'must' about
                 # grouping and order of infos.  Retain the depth history of
                 # each line in case there is doubt which could be resolved.
@@ -753,7 +783,8 @@ class Engine:
                             pv_group = deepcopy(self.snapshot.pv_group)
                 pv_group[info.get(ips.multipv)] = info
                 self.snapshot = self.snapshot._replace(
-                    pv_group=pv_group, **info)
+                    pv_group=pv_group, **info
+                )
 
             else:
                 self.snapshot = self.snapshot._replace(**info)
@@ -787,7 +818,7 @@ class Engine:
 
     def process_engine_commands(self, commands):
         """Note the values in commands from engine."""
-        #n, c = commands
+        # n, c = commands
         for i in commands[1]:
             self.note_engine_command(i)
 
@@ -823,20 +854,20 @@ class Engine:
 
     def set_copyprotection(self, status):
         """Set copyprotection to status: 'ok' or 'checking'."""
-        if status in ('ok', 'checking'):
+        if status in ("ok", "checking"):
             self.copyprotection = status
         else:
-            self.copyprotection = 'error'
+            self.copyprotection = "error"
 
     def set_registration(self, status):
         """Set registration to status: 'ok', 'checking', or False."""
-        if status in ('ok', 'checking', False):
+        if status in ("ok", "checking", False):
             self.registration = status
         else:
-            self.registration = 'error'
+            self.registration = "error"
 
 
 EngineInterface = namedtuple(
-    'EngineInterface',
-    ['driver', 'program_file_name', 'to_driver_queue', 'parser'],
-    )
+    "EngineInterface",
+    ["driver", "program_file_name", "to_driver_queue", "parser"],
+)

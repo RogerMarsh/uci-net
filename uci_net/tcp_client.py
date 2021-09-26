@@ -65,10 +65,10 @@ from .engine import (
     ReservedOptionNames,
     GoSubCommands,
     PositionSubCommands,
-    )
+)
 
-DEFAULT_UCI_ENGINE_LISTEN_PORT = '11111'
-DEFAULT_UCI_ENGINE_HOSTNAME = '127.0.0.1'
+DEFAULT_UCI_ENGINE_LISTEN_PORT = "11111"
+DEFAULT_UCI_ENGINE_HOSTNAME = "127.0.0.1"
 GO_COMMAND_SEQUENCE = [CommandsToEngine.setoption, CommandsToEngine.position]
 
 
@@ -96,11 +96,11 @@ class UCIClientProtocol(asyncio.Protocol):
     def connection_lost(self, exc):
         """Write response to stdout after connection finished."""
         self.loop.stop()
-        response = b''.join(self.data_from_engine).decode().strip()
+        response = b"".join(self.data_from_engine).decode().strip()
         if response:
             response = literal_eval(response)
             for text in response[-1]:
-                sys.stdout.write(text + '\n')
+                sys.stdout.write(text + "\n")
                 sys.stdout.flush()
 
 
@@ -108,33 +108,38 @@ def run_connection(host, port, message):
     """Connect to server running an UCI chess engine to do batch of commands."""
     try:
         loop = asyncio.get_event_loop()
-        coro = loop.create_connection(lambda: UCIClientProtocol(message, loop),
-                                      host,
-                                      port)
+        coro = loop.create_connection(
+            lambda: UCIClientProtocol(message, loop), host, port
+        )
         loop.run_until_complete(coro)
         loop.run_forever()
     except Exception as exc:
         rep = tkinter.Tk()
-        rep.wm_title('UCI TCP Client')
-        label = tkinter.Label(master=rep,
-                              wraplength='3i',
-                              justify=tkinter.LEFT,
-                              text=''.join(
-                                  ('\nA problem has occurred with the UCI ',
-                                   'chess engine:\n\n',
-                                   sys.argv[1],
-                                   '\n\nNo more analysis will be done by ',
-                                   'this engine until the quit and start ',
-                                   'actions have been done.\n\nThe reported ',
-                                   'exception is:\n\n',
-                                   str(exc),
-                                   '\n')))
+        rep.wm_title("UCI TCP Client")
+        label = tkinter.Label(
+            master=rep,
+            wraplength="3i",
+            justify=tkinter.LEFT,
+            text="".join(
+                (
+                    "\nA problem has occurred with the UCI ",
+                    "chess engine:\n\n",
+                    sys.argv[1],
+                    "\n\nNo more analysis will be done by ",
+                    "this engine until the quit and start ",
+                    "actions have been done.\n\nThe reported ",
+                    "exception is:\n\n",
+                    str(exc),
+                    "\n",
+                )
+            ),
+        )
         label.pack()
         rep.mainloop()
         del rep
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     url = urlsplit(sys.argv[1])
     if url.port or url.hostname:
@@ -147,7 +152,7 @@ if __name__ == '__main__':
         else:
             port = DEFAULT_UCI_ENGINE_LISTEN_PORT
 
-    commands_to_engine = [' '.join((CommandsToEngine.start, sys.argv[1]))]
+    commands_to_engine = [" ".join((CommandsToEngine.start, sys.argv[1]))]
     while True:
         data = sys.stdin.readline()
         if not data:
@@ -176,8 +181,9 @@ if __name__ == '__main__':
                 pass
             elif command_data[1] != GoSubCommands.depth:
                 pass
-            elif [c.split()[0]
-                  for c in commands_to_engine] != GO_COMMAND_SEQUENCE:
+            elif [
+                c.split()[0] for c in commands_to_engine
+            ] != GO_COMMAND_SEQUENCE:
                 pass
             else:
                 commands_to_engine.append(data.strip())

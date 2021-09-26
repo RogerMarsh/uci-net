@@ -26,10 +26,18 @@ class UCIDriverOverTCP(UCIDriver):
         """
         url = urlsplit(args[0])
         if url.port or url.hostname:
-            args.insert(0, 'uci_net.tcp_client')
-            args.insert(0, '-m')
+            args.insert(0, "uci_net.tcp_client")
+            args.insert(0, "-m")
             args.insert(
                 0,
-                ''.join(('python',
-                         ('' if sys.platform == 'win32' else
-                          '.'.join(str(e) for e in sys.version_info[:2])))))
+                "".join(
+                    (
+                        "python",
+                        (
+                            ""
+                            if sys.platform == "win32"
+                            else ".".join(str(e) for e in sys.version_info[:2])
+                        ),
+                    )
+                ),
+            )

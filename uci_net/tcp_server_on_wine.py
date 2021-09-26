@@ -49,9 +49,9 @@ from .engine import (
     ReservedOptionNames,
     CommandsFromEngine,
     SetoptionSubCommands,
-    )
+)
 
-UCI_ENGINE_LISTEN_HOSTNAME = '0.0.0.0'
+UCI_ENGINE_LISTEN_HOSTNAME = "0.0.0.0"
 
 
 # This side of "if __name__ == '__main__'" so multiprocessing.Process() target
@@ -63,7 +63,7 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
         driver.start_engine(path, args)
         to_driver_queue.put(CommandsToEngine.uci)
     except:
-        to_ui_queue.put(('start failed', (ui_name,)))
+        to_ui_queue.put(("start failed", (ui_name,)))
         return
 
     # On FreeBSD, etc?, KeyboardInterrupts do not interrupt the <queue>.get()
@@ -83,8 +83,7 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
     driver.quit_engine()
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
 
     async def handle_client_uci_commands(reader, writer):
         """Handle UCI commands received on reader and reply on writer."""
@@ -107,7 +106,8 @@ if __name__ == '__main__':
             # 'go' commands with 'ucinewgame' and 'clear hash'.
             # Postpone the 'isready' block until the 'go' block arrives.
             writer.write(
-                repr((engine_name, [CommandsFromEngine.readyok])).encode())
+                repr((engine_name, [CommandsFromEngine.readyok])).encode()
+            )
 
         elif commands[-1].split(maxsplit=1)[0] == CommandsToEngine.go:
 
@@ -117,23 +117,30 @@ if __name__ == '__main__':
             to_driver_queue.put(CommandsToEngine.ucinewgame)
             to_driver_queue.put(CommandsToEngine.isready)
             while True:
-                #n, c = uci_drivers_reply.get()
+                # n, c = uci_drivers_reply.get()
                 item = uci_drivers_reply.get()[1]
                 if item[-1].split(maxsplit=1)[0] == CommandsFromEngine.readyok:
                     break
             to_driver_queue.put(
-                ' '.join(
-                    (CommandsToEngine.setoption,
-                     SetoptionSubCommands.name,
-                     ReservedOptionNames.clear_hash)))
+                " ".join(
+                    (
+                        CommandsToEngine.setoption,
+                        SetoptionSubCommands.name,
+                        ReservedOptionNames.clear_hash,
+                    )
+                )
+            )
             for item in commands:
                 to_driver_queue.put(item)
             reply = []
             while True:
-                #n, c = uci_drivers_reply.get()
+                # n, c = uci_drivers_reply.get()
                 item = uci_drivers_reply.get()[1]
                 reply.extend(item)
-                if item[-1].split(maxsplit=1)[0] == CommandsFromEngine.bestmove:
+                if (
+                    item[-1].split(maxsplit=1)[0]
+                    == CommandsFromEngine.bestmove
+                ):
                     break
             reply = repr((engine_name, reply))
             writer.write(reply.encode())
@@ -141,7 +148,6 @@ if __name__ == '__main__':
         await writer.drain()
 
         writer.close()
-
 
     class UCIServer:
         """Capture server process parameters from command line.
@@ -167,15 +173,16 @@ if __name__ == '__main__':
             elif allowed_callers is not None:
                 self.allowed_callers = tuple(allowed_callers)
 
-
     if len(sys.argv) > 4:
-        uciserver = UCIServer(listen_port=sys.argv[1],
-                              allowed_callers=sys.argv[2])
+        uciserver = UCIServer(
+            listen_port=sys.argv[1], allowed_callers=sys.argv[2]
+        )
         program_file_name = sys.argv[3]
         args = sys.argv[4:]
     elif len(sys.argv) > 3:
-        uciserver = UCIServer(listen_port=sys.argv[1],
-                              allowed_callers=sys.argv[2])
+        uciserver = UCIServer(
+            listen_port=sys.argv[1], allowed_callers=sys.argv[2]
+        )
         program_file_name = sys.argv[3]
         args = None
     elif len(sys.argv) > 2:
@@ -187,15 +194,19 @@ if __name__ == '__main__':
         program_file_name = sys.argv[1]
         args = None
     else:
-        sys.stdout.write(''.join(
-            ('A path to an UCI chess engine must be given.\n',
-             'Usage:\n\n',
-             'python[version] -m uci.tcp_driver ',
-             '[port] [allowed callers] ',
-             'path [options]\n\n',
-             "See chess engine documentation for 'options'.\n",
-             "'allowed callers' is comma separated hostname list.\n",
-             )))
+        sys.stdout.write(
+            "".join(
+                (
+                    "A path to an UCI chess engine must be given.\n",
+                    "Usage:\n\n",
+                    "python[version] -m uci.tcp_driver ",
+                    "[port] [allowed callers] ",
+                    "path [options]\n\n",
+                    "See chess engine documentation for 'options'.\n",
+                    "'allowed callers' is comma separated hostname list.\n",
+                )
+            )
+        )
         sys.exit()
 
     # Avoid "OSError: [WinError 535] Pipe connected"  at Python3.3 running
@@ -209,34 +220,39 @@ if __name__ == '__main__':
     # At Python3.5 running under Wine on FreeBSD 10.1, get() does not wait
     # when the queue is empty either, and ChessTab does not run under
     # Python3.3 because it uses asyncio: so no point in disabling.
-    #try:
+    # try:
     #    uci_drivers_reply = dummy.Queue()
-    #except OSError:
+    # except OSError:
     #    uci_drivers_reply = None
     uci_drivers_reply = dummy.Queue()
 
     to_driver_queue = dummy.Queue()
     driver = dummy.Process(
         target=run_driver,
-        args=(to_driver_queue,
-              uci_drivers_reply,
-              program_file_name,
-              args,
-              os.path.splitext(os.path.basename(program_file_name))[0]),
-        )
+        args=(
+            to_driver_queue,
+            uci_drivers_reply,
+            program_file_name,
+            args,
+            os.path.splitext(os.path.basename(program_file_name))[0],
+        ),
+    )
     driver.start()
 
     # If this done here rather than in run_driver() Contol-c is ignored later.
-    #to_driver_queue.put(CommandsToEngine.uci)
+    # to_driver_queue.put(CommandsToEngine.uci)
 
     uciok_item = uci_drivers_reply.get()
-    if uciok_item[0] == 'start failed':
-        sys.stdout.write('Unable to start chess engine.\n')
+    if uciok_item[0] == "start failed":
+        sys.stdout.write("Unable to start chess engine.\n")
         sys.exit()
-    engine_name = ' '.join((CommandsFromEngine.id_,
-                            SetoptionSubCommands.name,
-                            '',
-                            ))
+    engine_name = " ".join(
+        (
+            CommandsFromEngine.id_,
+            SetoptionSubCommands.name,
+            "",
+        )
+    )
     for i in uciok_item[1]:
         if i.startswith(engine_name):
             engine_name = i.split(None, 2)
@@ -245,21 +261,25 @@ if __name__ == '__main__':
                 if uciok_item[1][-1] == CommandsFromEngine.uciok:
                     break
     else:
-        sys.stdout.write('Unexpected start-up response from chess engine.\n')
+        sys.stdout.write("Unexpected start-up response from chess engine.\n")
         to_driver_queue.put(CommandsToEngine.quit_)
         sys.exit()
 
     loop = asyncio.get_event_loop()
-    coro = asyncio.start_server(handle_client_uci_commands,
-                                UCI_ENGINE_LISTEN_HOSTNAME,
-                                uciserver.listen_port,
-                                loop=loop)
+    coro = asyncio.start_server(
+        handle_client_uci_commands,
+        UCI_ENGINE_LISTEN_HOSTNAME,
+        uciserver.listen_port,
+        loop=loop,
+    )
     server = loop.run_until_complete(coro)
 
     # Serve requests until Ctrl+C is pressed or termination
     sys.stdout.write(
-        'Serving {} on {}\n'.format(engine_name,
-                                    server.sockets[0].getsockname()))
+        "Serving {} on {}\n".format(
+            engine_name, server.sockets[0].getsockname()
+        )
+    )
     try:
         loop.run_forever()
     except (KeyboardInterrupt, SystemExit):
@@ -269,7 +289,7 @@ if __name__ == '__main__':
     server.close()
     loop.run_until_complete(server.wait_closed())
     loop.close()
-    sys.stdout.write('\nClosed\n')
+    sys.stdout.write("\nClosed\n")
 
     # Terminate the driver
     while True:
