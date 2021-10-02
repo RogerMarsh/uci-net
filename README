@@ -14,29 +14,13 @@ This package provides a pure Python client-server `Universal Chess Interface`_ t
 Installation Instructions
 =========================
 
-Usually this package will be installed by installing `ChessTab`_.
+This package is available on PyPI so can be installed by typing
 
-Install the package by typing
+   python -m pip install --user uci-net
 
-   python setup.py install
+at the command prompt.
 
-at the command prompt with setup.py in the current directory.
-
-You may need to give the path and version of Python depending on your system's configuration:
-
-   <path to python>/python<version> setup.py install
-
-   For example
-
-      C:\\Python36\\python setup.py install
-
-         on Microsoft Windows or
-
-      python3.6 setup.py install
-
-         on Unix-like systems.
-
-Use `Python`_ 3.6 or later.
+See `Python`_ and `pip`_ documentation for alternatives and platform-specific points.
 
 
 Run
@@ -50,8 +34,7 @@ A path to a UCI chess engine must be given.
 
 See chess engine documentation for options.
 
-By default anyone is allowed to use the server, subject to firewall restrictions.  A comma
-separated list of hostnames prevents hosts not in the list from using the server.
+By default anyone is allowed to use the server, subject to firewall restrictions.  A comma separated list of hostnames in <allowed callers> prevents hosts not in the list from using the server.
 
 Conections to the server are made on port 'port'.  The default is 11111.
 
@@ -62,6 +45,8 @@ Assuming a hostname 'stockfishbox' with IP address 192.168.0.1 and the default p
 
 The record says 'name=Stockfish 12' because 'Stockfish 12' is the 'id name' value returned by Stockfish 12 in response to the 'uci' command.
 
+The client is run by applications such as `ChessTab`_ when required.
+
 
 Notes
 =====
@@ -71,6 +56,7 @@ Project name and package name changed from 'uci' to 'uci-net' prior to upload to
 The version numbers of uci-net continue on from uci.
 
 
-.. _`Python`: https://python.org
-.. _`Universal Chess Interface`: https://en.wikipedia.org/wiki/Universal_Chess_Interface
-.. _`ChessTab`: http://www.solentware.co.uk/download.html
+.. _Python: https://python.org
+.. _pip: https://packaging.python.org/installing
+.. _Universal Chess Interface: https://en.wikipedia.org/wiki/Universal_Chess_Interface
+.. _ChessTab: http://www.solentware.co.uk/download.html
