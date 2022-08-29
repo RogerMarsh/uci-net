@@ -105,7 +105,7 @@ class UCIClientProtocol(asyncio.Protocol):
 
 
 def run_connection(host, port, message):
-    """Connect to server running an UCI chess engine to do batch of commands."""
+    """Connect to UCI chess engine on host:port to commands in message."""
     try:
         loop = asyncio.get_event_loop()
         coro = loop.create_connection(

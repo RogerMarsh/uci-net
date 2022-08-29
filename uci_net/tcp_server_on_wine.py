@@ -62,7 +62,7 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
     try:
         driver.start_engine(path, args)
         to_driver_queue.put(CommandsToEngine.uci)
-    except:
+    except Exception:
         to_ui_queue.put(("start failed", (ui_name,)))
         return
 

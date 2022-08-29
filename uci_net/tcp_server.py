@@ -38,7 +38,7 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
     try:
         driver.start_engine(path, args)
         to_driver_queue.put(CommandsToEngine.uci)
-    except:
+    except Exception:
         to_ui_queue.put(("start failed", (ui_name,)))
         return
 
@@ -180,8 +180,8 @@ if __name__ == "__main__":
                     "A path to an UCI chess engine must be given.\n\n",
                     "See chess engine documentation for 'options'.\n\n",
                     "'allowed callers' is a comma separated hostname list.\n",
-                    "Only those on the list are allowed, but anyone is allowed if\n",
-                    "no list is given.\n\n",
+                    "Only those on the list are allowed, but anyone is ",
+                    "allowed if\nno list is given.\n\n",
                     "'port' is the port the server will listen on.\n",
                     "The default is ",
                     str(UCIServer.listen_port),

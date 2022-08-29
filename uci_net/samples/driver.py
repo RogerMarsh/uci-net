@@ -22,7 +22,7 @@ def run_driver(to_driver_queue, to_ui_queue, path, args, ui_name):
     driver = UCIDriverOverTCP(to_ui_queue, ui_name)
     try:
         driver.start_engine(path, args)
-    except:
+    except Exception:
         to_ui_queue.put(("start failed", (ui_name,)))
         return
     to_ui_queue.put(("started", (ui_name,)))
@@ -122,7 +122,7 @@ class EngineOutput:
             for ucid, value in self.uci_drivers.items():
                 try:
                     value[1].put(CommandsToEngine.quit_)
-                except:
+                except Exception:
                     tkinter.messagebox.showinfo(
                         title="Stop Engine",
                         message="".join(
@@ -236,8 +236,8 @@ class EngineOutput:
                     title="Send to Engine",
                     message="".join(
                         (
-                            "Command is not the one used to start dialogue.\n\n",
-                            "Do you want to cancel dialogue?",
+                            "Command is not the one used to start dialogue.",
+                            "\n\nDo you want to cancel dialogue?",
                         )
                     ),
                 )
@@ -251,7 +251,7 @@ class EngineOutput:
         for name, to_driver_queue in self.uci_drivers.values():
             try:
                 to_driver_queue.put(command)
-            except:
+            except Exception:
                 tkinter.messagebox.showinfo(
                     title="Send to Engine",
                     message="".join(
@@ -328,10 +328,10 @@ class EngineOutput:
                 for clause in response:
                     try:
                         text.insert(tkinter.END, clause)
-                    except:
+                    except Exception:
                         text.insert(tkinter.END, "*** unable to insert item")
                     text.insert(tkinter.END, "\n")
-            except:
+            except Exception:
                 text.insert(tkinter.END, "*** unable to insert any items")
 
 
@@ -340,10 +340,10 @@ if __name__ == "__main__":
     app = EngineOutput()
     try:
         app.root.mainloop()
-    except:
+    except Exception:
         try:
             app.root.destroy()
-        except:
+        except Exception:
             pass
     finally:
         del app

@@ -337,7 +337,7 @@ def option(
     if type_ == OptionTypes.button:
         return CheckOption(name=name, type=OptionTypes.button)
     if type_ == OptionTypes.check:
-        if not default in ReservedOptionNames.check_values:
+        if default not in ReservedOptionNames.check_values:
             return None
         return ButtonOption(name=name, type=OptionTypes.check, default=default)
     if type_ == OptionTypes.combo:
@@ -384,7 +384,8 @@ class InfoParameters:
          "info depth 12 nodes 123456 nps 100000".
     Also all infos belonging to the pv should be sent together
     e.g.
-    "info depth 2 score cp 214 time 1242 nodes 2124 nps 34928 pv e2e4 e7e5 g1f3"
+    "info depth 2 score cp 214 time 1242 nodes 2124 nps 34928 pv e2e4 e7e5
+    g1f3"
     I suggest to start sending "currmove", "currmovenumber", "currline" and
     "refutation" only after one second to avoid too much traffic.
     Additional info:
@@ -392,8 +393,8 @@ class InfoParameters:
         search depth in plies
     * seldepth <x>
         selective search depth in plies,
-        if the engine sends seldepth there must also be a "depth" present in the
-        same string.
+        if the engine sends seldepth there must also be a "depth" present in
+        the same string.
     * time <x>
         the time searched in ms, this should be sent together with the pv.
     * nodes <x>
@@ -402,7 +403,8 @@ class InfoParameters:
         the best line found
     * multipv <num>
         this for the multi pv mode.
-        for the best move/pv add "multipv 1" in the string when you send the pv.
+        for the best move/pv add "multipv 1" in the string when you send the
+        pv.
         in k-best mode always send all k variants in k strings together.
     ...
     @@@

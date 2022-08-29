@@ -14,7 +14,7 @@ class UCIDriverOverTCP(UCIDriver):
     """Implement communication with chess engine processes."""
 
     def insert_remote_hostname_port(self, args):
-        """Prepend args with tcp_client command if args[0] has hostname or port.
+        """Prepend args with tcp_client command if hostname or port in args[0].
 
         If hostname or port is present prepend args to connect to remote host
         over tcp and have the remote UCI chess engine do analysis.
