@@ -1,9 +1,42 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>=61.0",
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
 line-length = 79
+
+[project]
+name = "uci-net"
+version = "1.2.7.dev0"
+authors = [
+  { name="Roger Marsh", email="roger.marsh@solentware.co.uk" },
+]
+description = "Universal Chess Interface client-server conversation."
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+    "Intended Audience :: Developers",
+    "Development Status :: 3 - Alpha",
+]
+license = {file = "LICENCE"}
+readme = "README"
+
+[project.urls]
+Homepage = "http://www.solentware.co.uk"
+Repository = "https://github.com/RogerMarsh/uci-net.git"
+"Bug Tracker" = "https://github.com/RogerMarsh/uci-net/issues"
+
+[tool.setuptools]
+packages = [
+    "uci_net",
+    "uci_net.samples",
+]
