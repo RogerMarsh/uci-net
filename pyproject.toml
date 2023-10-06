@@ -10,7 +10,7 @@ line-length = 79
 
 [project]
 name = "uci-net"
-version = "1.2.7.dev0"
+version = "1.2.7"
 authors = [
   { name="Roger Marsh", email="roger.marsh@solentware.co.uk" },
 ]
